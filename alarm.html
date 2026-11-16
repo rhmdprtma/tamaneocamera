@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>TAMA - Alarm</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0a1e">
+<link rel="icon" href="icon.jpg">
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
+}
+body{
+min-height:100dvh;
+font-family:system-ui,-apple-system,sans-serif;
+color:#fff;
+background:#0f0a1e;
+overflow-x:hidden;
+}
+.bg{
+position:fixed;
+inset:0;
+z-index:0;
+background:
+radial-gradient(600px 400px at 10% 10%, rgba(168,85,247,.55), transparent 60%),
+radial-gradient(600px 500px at 90% 20%, rgba(236,72,153,.45), transparent 60%),
+radial-gradient(500px 500px at 50% 100%, rgba(34,211,238,.35), transparent 60%),
+linear-gradient(180deg, #0f0a1e, #1e1033);
+}
+.bg::after{
+content:"";
+position:absolute;
+inset:0;
+background-image:radial-gradient(rgba(255,255,255,.18) 1px, transparent 1px);
+background-size:28px 28px;
+opacity:.35;
+}
+.wrap{
+position:relative;
+z-index:1;
+max-width:440px;
+margin:0 auto;
+padding:16px 16px 32px;
+}
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+margin-bottom:16px;
+}
+.logo{
+display:flex;
+align-items:center;
+gap:8px;
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.2);
+backdrop-filter:blur(12px);
+padding:8px 13px;
+border-radius:999px;
+font-weight:900;
+letter-spacing:3px;
+font-size:13px;
+white-space:nowrap;
+}
+.dot{
+width:9px;
+height:9px;
+border-radius:50%;
+background:#a855f7;
+box-shadow:0 0 14px #a855f7;
+flex-shrink:0;
+}
+.link{
+background:#fff;
+color:#000;
+text-decoration:none;
+font-size:12px;
+font-weight:800;
+padding:9px 13px;
+border-radius:999px;
+white-space:nowrap;
+}
+.clock-card{
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.22);
+backdrop-filter:blur(18px);
+border-radius:28px;
+padding:24px 18px 20px;
+text-align:center;
+box-shadow:0 20px 50px rgba(0,0,0,.4);
+margin-bottom:14px;
+position:relative;
+overflow:hidden;
+}
+.clock-card::before{
+content:"";
+position:absolute;
+top:-60px;
+left:50%;
+transform:translateX(-50%);
+width:220px;
+height:220px;
+background:radial-gradient(circle, rgba(255,255,255,.28), transparent 70%);
+pointer-events:none;
+}
+.date{
+font-size:12px;
+letter-spacing:2px;
+text-transform:uppercase;
+opacity:.85;
+font-weight:700;
+position:relative;
+}
+.time{
+font-size:68px;
+font-weight:900;
+letter-spacing:-2px;
+line-height:1;
+margin:10px 0 4px;
+font-variant-numeric:tabular-nums;
+position:relative;
+}
+.time span{
+font-size:28px;
+font-weight:800;
+color:#f0abfc;
+letter-spacing:0;
+}
+.seconds{
+font-size:12px;
+opacity:.7;
+letter-spacing:1px;
+position:relative;
+}
+.progress{
+height:6px;
+background:rgba(255,255,255,.15);
+border-radius:999px;
+overflow:hidden;
+margin-top:16px;
+position:relative;
+}
+.progress i{
+display:block;
+height:100%;
+background:linear-gradient(90deg, #a855f7, #ec4899, #22d3ee);
+width:0%;
+border-radius:999px;
+transition:width .5s;
+}
+.next{
+margin-top:12px;
+font-size:12px;
+background:rgba(0,0,0,.35);
+display:inline-block;
+padding:8px 13px;
+border-radius:999px;
+position:relative;
+}
+.card{
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.22);
+backdrop-filter:blur(18px);
+border-radius:24px;
+padding:18px 16px;
+margin-bottom:14px;
+overflow:hidden;
+}
+.card-title{
+font-weight:900;
+font-size:15px;
+margin-bottom:14px;
+display:flex;
+align-items:center;
+gap:7px;
+}
+.label{
+font-size:12px;
+opacity:.85;
+font-weight:600;
+display:block;
+margin:0 0 7px 2px;
+}
+.field{
+width:100%;
+display:block;
+margin:0 0 14px 0;
+padding:13px 14px;
+border-radius:14px;
+border:1px solid rgba(255,255,255,.22);
+background:rgba(0,0,0,.38);
+color:#fff;
+font-size:14px;
+outline:none;
+}
+.field::placeholder{
+color:rgba(255,255,255,.55);
+}
+input[type="time"].field{
+color-scheme:dark;
+font-size:26px;
+font-weight:900;
+text-align:center;
+letter-spacing:2px;
+padding:12px 10px;
+appearance:none;
+-webkit-appearance:none;
+}
+input[type="time"].field::-webkit-calendar-picker-indicator{
+filter:invert(1);
+opacity:.7;
+cursor:pointer;
+}
+select.field{
+appearance:none;
+-webkit-appearance:none;
+background-image:linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
+background-position:calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+background-size:5px 5px, 5px 5px;
+background-repeat:no-repeat;
+padding-right:36px;
+}
+select.field option{
+background:#1e1033;
+color:#fff;
+}
+.addBtn{
+width:100%;
+background:linear-gradient(90deg,#a855f7,#ec4899);
+border:none;
+color:#fff;
+padding:15px;
+border-radius:999px;
+font-size:15px;
+font-weight:900;
+cursor:pointer;
+box-shadow:0 8px 24px rgba(236,72,153,.35);
+}
+.addBtn:active{
+transform:scale(.98);
+}
+.msg{
+font-size:12px;
+text-align:center;
+margin-top:9px;
+min-height:16px;
+color:#fde68a;
+}
+.list-title{
+font-weight:900;
+font-size:15px;
+margin:2px 0 10px 2px;
+}
+.empty{
+text-align:center;
+padding:20px 14px;
+background:rgba(255,255,255,.08);
+border:1px dashed rgba(255,255,255,.3);
+border-radius:18px;
+font-size:13px;
+line-height:1.6;
+opacity:.9;
+}
+.tips{
+text-align:center;
+font-size:11px;
+opacity:.6;
+margin-top:16px;
+line-height:1.6;
+padding:0 10px;
+}
+.alarm-card{
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.2);
+backdrop-filter:blur(12px);
+border-radius:20px;
+padding:14px 14px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+margin-bottom:10px;
+}
+
+/* TAMA PRO VISUAL SYSTEM */
+:root{color-scheme:dark;--cyan:#63eaff;--violet:#9d8cff}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;background:#030711;color:#edf8ff;letter-spacing:.01em}
+.bg{background:radial-gradient(600px 430px at 12% 8%,rgba(37,119,160,.32),transparent 62%),radial-gradient(620px 480px at 90% 20%,rgba(108,79,177,.3),transparent 62%),linear-gradient(160deg,#030711,#080b1b 55%,#100d25)}
+.bg::after{opacity:.12;background-size:34px 34px}
+.wrap{max-width:460px;padding:calc(16px + env(safe-area-inset-top)) 17px calc(32px + env(safe-area-inset-bottom))}
+.logo,.ver,.badge{background:rgba(7,20,38,.72);border:1px solid rgba(119,220,255,.22);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.logo .dot{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.card,.panel,.alarm-card{background:linear-gradient(145deg,rgba(13,28,49,.84),rgba(8,12,29,.9));border:1px solid rgba(135,209,255,.18);border-radius:20px;box-shadow:0 14px 38px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+button,.btn{border-radius:12px;transition:transform .16s ease,filter .16s ease}
+button:active,.btn:active{transform:scale(.97)}
+input,select{border-radius:11px!important;background:rgba(4,13,27,.85)!important;border:1px solid rgba(135,209,255,.25)!important;color:#effaff!important}
+
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+<div class="top">
+<div class="logo"><div class="dot"></div> TAMA</div>
+<a class="link" href="index.html">🏠 Jam</a>
+<a class="link" href="kamera.html" style="background:#a855f7;color:#fff">📷 Kamera</a>
+</div>
+<div class="clock-card">
+<div class="date" id="dateTxt">Memuat...</div>
+<div class="time" id="timeTxt">--:--<span id="ampm"> AM</span></div>
+<div class="seconds" id="secTxt">Detik 00 • Alarm aktif: 0</div>
+<div class="progress"><i id="progBar"></i></div>
+<div class="next" id="nextTxt">⏰ Belum ada alarm</div>
+</div>
+<div class="card">
+<div class="card-title">⏰ Tambah Alarm Baru</div>
+<label class="label">Jam Alarm</label>
+<input id="alarmTime" class="field" type="time">
+<label class="label">Nama Alarm</label>
+<input id="alarmLabel" class="field" type="text" placeholder="Contoh: Bangun Tidur / Sekolah / Sahur">
+<label class="label">Bunyi Alarm</label>
+<select id="alarmSound" class="field">
+<option value="beep">🔔 Beep - Standar</option>
+<option value="melodi">🎵 Melodi - Lembut</option>
+<option value="keras">🚨 Keras - Bangunin</option>
+<option value="getar">📳 Getar Doang</option>
+</select>
+<button id="addBtn" class="addBtn">+ TAMBAH ALARM</button>
+<div id="msg" class="msg"></div>
+</div>
+<div class="list-title">📋 Daftar Alarm Lu</div>
+<div id="list"></div>
+<div id="empty" class="empty">
+Belum ada alarm bung.<br>
+Tambahin di atas, misal jam 05:00<br>
+buat bangun sahur / sekolah.
+</div>
+<div class="tips">
+Tips: Biarin halaman ini kebuka + volume HP lu gedein.<br>
+Kalo mau bunyi terus, jangan di-lock HP nya.
+</div>
+</div>
+<div id="ring" style="display:none;position:fixed;inset:0;z-index:99;background:linear-gradient(180deg,#7c3aed,#db2777);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px">
+<div style="font-size:60px">⏰</div>
+<div style="font-size:32px;font-weight:900;margin:10px 0 4px" id="ringLabel">ALARM!</div>
+<div style="font-size:44px;font-weight:900" id="ringTime">05:00</div>
+<div style="font-size:13px;opacity:.9;margin-top:6px">Waktunya bangun bung!</div>
+<button id="snoozeBtn" style="margin-top:26px;width:100%;max-width:320px;background:#fff;color:#000;border:none;padding:16px;border-radius:999px;font-size:15px;font-weight:900">😴 SNOOZE 5 MENIT</button>
+<button id="stopBtn" style="margin-top:10px;width:100%;max-width:320px;background:#000;color:#fff;border:2px solid #fff;padding:16px;border-radius:999px;font-size:15px;font-weight:900">⏹ STOP ALARM</button>
+</div>
+<script>
+var dateTxt = document.getElementById('dateTxt');
+var timeTxt = document.getElementById('timeTxt');
+var secTxt = document.getElementById('secTxt');
+var progBar = document.getElementById('progBar');
+var nextTxt = document.getElementById('nextTxt');
+var listEl = document.getElementById('list');
+var emptyEl = document.getElementById('empty');
+var msgEl = document.getElementById('msg');
+var alarms = [];
+try{alarms = JSON.parse(localStorage.getItem('tama_alarms') || '[]');}catch(e){alarms = [];}
+var audioCtx = null;
+var ringInterval = null;
+var currentRingId = null;
+function saveAlarms(){localStorage.setItem('tama_alarms', JSON.stringify(alarms));}
+function playBeep(type){
+if(type==='getar'){if(navigator.vibrate) navigator.vibrate([300,100,300,100,300]);return;}
+try{
+if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+if(audioCtx.state==='suspended') audioCtx.resume();
+var now = audioCtx.currentTime;
+var notes = [];
+if(type==='beep') notes = [880,880,880];
+if(type==='melodi') notes = [523,659,784,1046,784,659];
+if(type==='keras') notes = [1000,800,1000,800,1000,800,1000];
+notes.forEach(function(freq,i){
+var osc = audioCtx.createOscillator();
+var gain = audioCtx.createGain();
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.type = type==='melodi' ? 'sine' : 'square';
+osc.frequency.value = freq;
+gain.gain.setValueAtTime(0.0001, now+i*0.35);
+gain.gain.exponentialRampToValueAtTime(0.25, now+i*0.35+0.05);
+gain.gain.exponentialRampToValueAtTime(0.0001, now+i*0.35+0.3);
+osc.start(now+i*0.35);
+osc.stop(now+i*0.35+0.32);
+});
+}catch(e){}
+if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+function render(){
+listEl.innerHTML = '';
+if(alarms.length===0){emptyEl.style.display='block';}else{emptyEl.style.display='none';}
+alarms.forEach(function(a){
+var card = document.createElement('div');
+card.className = 'alarm-card';
+card.style.opacity = a.on ? '1' : '0.55';
+var left = document.createElement('div');
+left.style.flex = '1';
+left.style.minWidth = '0';
+left.innerHTML = '<div style="font-size:26px;font-weight:900;line-height:1">'+a.time+'</div><div style="font-size:12px;margin-top:4px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(a.label||'Alarm')+' • '+a.sound+'</div>';
+var right = document.createElement('div');
+right.style.cssText = 'display:flex;gap:6px;align-items:center;flex-shrink:0';
+var toggle = document.createElement('button');
+toggle.textContent = a.on ? '🟢 ON' : '⚪ OFF';
+toggle.style.cssText = 'background:'+(a.on?'#22c55e':'#555')+';color:#fff;border:none;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer';
+toggle.onclick = function(){a.on=!a.on;saveAlarms();render();};
+var del = document.createElement('button');
+del.textContent = '🗑';
+del.style.cssText = 'background:#ef4444;border:none;padding:9px 11px;border-radius:999px;cursor:pointer';
+del.onclick = function(){alarms = alarms.filter(function(x){return x.id!==a.id;});saveAlarms();render();};
+right.appendChild(toggle);
+right.appendChild(del);
+card.appendChild(left);
+card.appendChild(right);
+listEl.appendChild(card);
+});
+var active = alarms.filter(function(x){return x.on;});
+if(active.length>0){nextTxt.textContent = '⏰ Alarm berikutnya: '+active[0].time+' - '+(active[0].label||'Alarm');}else{nextTxt.textContent = '⏰ Belum ada alarm yang aktif';}
+}
+document.getElementById('addBtn').onclick = function(){
+var time = document.getElementById('alarmTime').value;
+var label = document.getElementById('alarmLabel').value.trim();
+var sound = document.getElementById('alarmSound').value;
+if(!time){msgEl.textContent = '⚠️ Pilih jam dulu bung!';return;}
+alarms.push({id:Date.now(),time:time,label:label||'Alarm',sound:sound,on:true});
+saveAlarms();
+render();
+msgEl.textContent = '✅ Alarm '+time+' berhasil ditambah!';
+document.getElementById('alarmLabel').value = '';
+playBeep(sound);
+};
+function tick(){
+var now = new Date();
+var h = now.getHours();
+var m = now.getMinutes();
+var s = now.getSeconds();
+var h12 = h%12;
+if(h12===0) h12=12;
+var ampm = h>=12 ? ' PM' : ' AM';
+var hh = String(h12).padStart(2,'0');
+var mm = String(m).padStart(2,'0');
+timeTxt.innerHTML = hh+':'+mm+'<span>'+ampm+'</span>';
+dateTxt.textContent = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+secTxt.textContent = 'Detik '+String(s).padStart(2,'0')+' • Alarm aktif: '+alarms.filter(function(x){return x.on;}).length;
+progBar.style.width = (s/60*100)+'%';
+if(s===0){
+var cur = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+alarms.forEach(function(a){
+if(a.on && a.time===cur && currentRingId!==a.id+cur){startRing(a);}
+});
+}
+}
+function startRing(a){
+currentRingId = a.id+a.time;
+document.getElementById('ringLabel').textContent = a.label||'ALARM!';
+document.getElementById('ringTime').textContent = a.time;
+var ring = document.getElementById('ring');
+ring.style.display = 'flex';
+playBeep(a.sound);
+if(ringInterval) clearInterval(ringInterval);
+ringInterval = setInterval(function(){playBeep(a.sound);ring.style.opacity = ring.style.opacity==='0.85' ? '1' : '0.85';},1800);
+document.getElementById('stopBtn').onclick = function(){clearInterval(ringInterval);ringInterval=null;ring.style.display='none';currentRingId=null;};
+document.getElementById('snoozeBtn').onclick = function(){
+clearInterval(ringInterval);ringInterval=null;ring.style.display='none';
+var d = new Date();d.setMinutes(d.getMinutes()+5);
+var nt = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+alarms.push({id:Date.now(),time:nt,label:(a.label||'Alarm')+' (Snooze)',sound:a.sound,on:true});
+saveAlarms();render();currentRingId=null;
+msgEl.textContent = '😴 Snooze 5 menit, nanti bunyi lagi jam '+nt;
+};
+}
+render();
+tick();
+setInterval(tick,1000);
+</script>
+</body>
+</html>

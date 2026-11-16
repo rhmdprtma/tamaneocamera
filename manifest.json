@@ -1,0 +1,30 @@
+{
+  "name": "TAMA",
+  "short_name": "TAMA",
+  "description": "TAMA Neo Camera — AR camera, hand effects and face tracking",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#030711",
+  "theme_color": "#030711",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}
