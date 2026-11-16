@@ -24,9 +24,9 @@ TAMA adalah proyek web mobile berisi halaman jam, alarm, dan kamera AR berbasis 
 
 Kamera membutuhkan izin pengguna dan secure context (HTTPS atau localhost). Untuk GitHub Pages, buka:
 
-- Beranda: https://tamayana.github.io/clock/
-- Kamera: https://tamayana.github.io/clock/kamera.html
-- Alarm: https://tamayana.github.io/clock/alarm.html
+- Beranda: https://tamayana.github.io/tamaneocamera/
+- Kamera: https://tamayana.github.io/tamaneocamera/kamera.html
+- Alarm: https://tamayana.github.io/tamaneocamera/alarm.html
 
 Buka melalui Safari atau Chrome, bukan browser dalam aplikasi pesan. Saat diminta, izinkan akses kamera. Ketersediaan perekaman video dan mode layar penuh bergantung pada dukungan browser/perangkat.
 
