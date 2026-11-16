@@ -243,27 +243,134 @@ makeNoise();
 function drawSensor(){
  if(!effectsOn.sensor||!sensorOn)return;
  var cur=face||lastFace;if(!cur)return;
- if(face){if(lastFace){faceVel.x=lerp(faceVel.x,face.x-lastFace.x,.3);faceVel.y=lerp(faceVel.y,face.y-lastFace.y,.3)}lastFace={x:face.x,y:face.y,w:face.w,h:face.h};}else{cur={x:lastFace.x+faceVel.x*2,y:lastFace.y+faceVel.y*2,w:lastFace.w,h:lastFace.h};lastFace=cur;}
+ if(face){
+  if(lastFace){faceVel.x=lerp(faceVel.x,face.x-lastFace.x,.3);faceVel.y=lerp(faceVel.y,face.y-lastFace.y,.3)}
+  lastFace={x:face.x,y:face.y,w:face.w,h:face.h};
+ }else{
+  cur={x:lastFace.x+faceVel.x*2,y:lastFace.y+faceVel.y*2,w:lastFace.w,h:lastFace.h};
+  lastFace=cur;
+ }
  if(!smoothFace)smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h};
- smoothFace.x=lerp(smoothFace.x,cur.x,.62);smoothFace.y=lerp(smoothFace.y,cur.y,.62);smoothFace.w=lerp(smoothFace.w,cur.w,.5);smoothFace.h=lerp(smoothFace.h,cur.h,.5);
- var s=smoothFace;var cx=s.x+faceVel.x*12;var cy=s.y+faceVel.y*12;var t=Date.now()*0.001;
- var rw=Math.max(140,s.w*1.38);var rh=Math.max(175,s.h*1.58);var x=cx-rw/2,y=cy-rh/2;
+ smoothFace.x=lerp(smoothFace.x,cur.x,.62);
+ smoothFace.y=lerp(smoothFace.y,cur.y,.62);
+ smoothFace.w=lerp(smoothFace.w,cur.w,.5);
+ smoothFace.h=lerp(smoothFace.h,cur.h,.5);
+
+ var s=smoothFace;
+ var cx=s.x+faceVel.x*12;
+ var cy=s.y+faceVel.y*12;
+
+ // OVAL - NGEPAS DI MUKA, GAK KEGEDHEAN
+ var rw=Math.max(140,s.w*1.32);
+ var rh=Math.max(175,s.h*1.52);
+ var x=cx-rw/2, y=cy-rh/2;
+
+ // ===== SIAPIN CANVAS KECIL BUAT AMBIL MUKA LU =====
  if(!window._blurSmall) window._blurSmall=document.createElement('canvas');
- var small=window._blurSmall;small.width=32;small.height=40;var sctx=small.getContext('2d');
+ var small=window._blurSmall;
+ small.width=32; small.height=40;
+ var sctx=small.getContext('2d');
  var vw=video.videoWidth||W, vh=video.videoHeight||H;
- if(vw&&vh){var scale=Math.max(W/vw,H/vh);var dw=vw*scale, dh=vh*scale;var dx=(W-dw)/2, dy=(H-dh)/2;var vx=(cx-dx)/scale, vy=(cy-dy)/scale;var vwFace=(rw/scale), vhFace=(rh/scale);var sxVideo=vw - vx - vwFace/2;var syVideo=vy - vhFace/2;try{sctx.clearRect(0,0,32,40);sctx.drawImage(video, sxVideo, syVideo, vwFace, vhFace, 0, 0, 32, 40);}catch(e){}}
- fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.clip();
- fctx.imageSmoothingEnabled=true;fctx.imageSmoothingQuality='high';
- for(var i=-4;i<=4;i++){fctx.globalAlpha=0.22;var offsetX=i*7;fctx.drawImage(small, x+offsetX, y, rw, rh);}
- fctx.globalAlpha=0.5;fctx.drawImage(small, x, y, rw, rh);fctx.globalAlpha=1;fctx.fillStyle='rgba(20,22,28,0.18)';fctx.fillRect(x,y,rw,rh);
- var glitchPower=0;var glitchCycle=(Date.now()%800)/800;if(glitchCycle<0.18)glitchPower=1;if(Math.random()<0.08)glitchPower=0.6;
+ if(vw&&vh){
+  var scale=Math.max(W/vw,H/vh);
+  var dw=vw*scale, dh=vh*scale;
+  var dx=(W-dw)/2, dy=(H-dh)/2;
+  var vx=(cx-dx)/scale, vy=(cy-dy)/scale;
+  var vwFace=(rw/scale), vhFace=(rh/scale);
+  var sxVideo=vw - vx - vwFace/2;
+  var syVideo=vy - vhFace/2;
+  try{ sctx.clearRect(0,0,32,40); sctx.drawImage(video, sxVideo, syVideo, vwFace, vhFace, 0, 0, 32, 40); }catch(e){}
+ }
+
+ // ===== 1. BIKIN BLUR DI CANVAS TERPISAH - BIAR GAK PERSEGI =====
+ if(!window._sensorBlur) window._sensorBlur=document.createElement('canvas');
+ var bc=window._sensorBlur;
+ bc.width=Math.max(2,Math.floor(rw)); bc.height=Math.max(2,Math.floor(rh));
+ var bctx=bc.getContext('2d');
+ bctx.clearRect(0,0,bc.width,bc.height);
+ bctx.imageSmoothingEnabled=true; bctx.imageSmoothingQuality='high';
+ // Motion blur kaya foto lu: gambar berkali-kali digeser ke samping
+ for(var i=-4;i<=4;i++){
+  bctx.globalAlpha=0.22;
+  bctx.drawImage(small, i*7, 0, bc.width, bc.height);
+ }
+ bctx.globalAlpha=0.5;
+ bctx.drawImage(small, 0, 0, bc.width, bc.height);
+ bctx.globalAlpha=1;
+ bctx.fillStyle='rgba(20,22,28,0.15)';
+ bctx.fillRect(0,0,bc.width,bc.height);
+
+ // ===== 2. KONSLET - TETEP ADA, TAPI DI DALEM OVAL DOANG =====
+ var glitchPower=0;
+ var glitchCycle=(Date.now()%800)/800;
+ if(glitchCycle<0.18) glitchPower=1;
+ if(Math.random()<0.08) glitchPower=0.6;
  if(glitchPower>0){
   var sliceCount=3+Math.floor(Math.random()*3);
-  for(var g=0;g<sliceCount;g++){var sliceY=y+Math.random()*rh*0.8;var sliceH=6+Math.random()*14;var sliceShift=(Math.random()-0.5)*28*glitchPower;fctx.save();fctx.beginPath();fctx.rect(x,sliceY,rw,sliceH);fctx.clip();fctx.globalAlpha=0.85;fctx.drawImage(small,x+sliceShift,y,rw,rh);fctx.restore();}
-  fctx.save();fctx.globalAlpha=0.22*glitchPower;fctx.globalCompositeOperation='lighter';fctx.fillStyle='rgba(0,255,255,0.5)';fctx.beginPath();fctx.ellipse(cx-3,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.fill();fctx.fillStyle='rgba(255,0,150,0.5)';fctx.beginPath();fctx.ellipse(cx+3,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.fill();fctx.restore();
-  for(var l=0;l<2;l++){var lineY=y+Math.random()*rh;fctx.save();fctx.globalAlpha=0.5+Math.random()*0.4;fctx.fillStyle=Math.random()<0.5?'rgba(255,255,255,0.9)':'rgba(94,231,255,0.9)';fctx.fillRect(x+Math.random()*rw*0.3,lineY,rw*(0.3+Math.random()*0.5),1.2);fctx.restore();}
-  for(var n=0;n<14;n++){var nx=x+Math.random()*rw;var ny=y+Math.random()*rh;var ex=(nx-cx)/(rw/2),ey=(ny-cy)/(rh/2);if(ex*ex+ey*ey>1)continue;fctx.save();fctx.globalAlpha=0.25+Math.random()*0.4;fctx.fillStyle=Math.random()<0.5?'#fff':'#5ee7ff';fctx.fillRect(nx,ny,1.5+Math.random()*2.5,1.5);fctx.restore();}
+  for(var g=0;g<sliceCount;g++){
+   var sliceY=Math.random()*bc.height*0.8;
+   var sliceH=6+Math.random()*14;
+   var sliceShift=(Math.random()-0.5)*28*glitchPower;
+   bctx.save();
+   bctx.beginPath(); bctx.rect(0,sliceY,bc.width,sliceH); bctx.clip();
+   bctx.globalAlpha=0.85;
+   bctx.drawImage(small, sliceShift, 0, bc.width, bc.height);
+   bctx.restore();
+  }
+  bctx.save(); bctx.globalAlpha=0.18*glitchPower; bctx.globalCompositeOperation='lighter';
+  bctx.fillStyle='rgba(0,255,255,0.5)'; bctx.fillRect(0,0,bc.width,bc.height);
+  bctx.fillStyle='rgba(255,0,150,0.35)'; bctx.fillRect(4,0,bc.width,bc.height);
+  bctx.restore();
+  for(var l=0;l<2;l++){
+   var lineY=Math.random()*bc.height;
+   bctx.save(); bctx.globalAlpha=0.5+Math.random()*0.4;
+   bctx.fillStyle=Math.random()<0.5?'rgba(255,255,255,0.9)':'rgba(94,231,255,0.9)';
+   bctx.fillRect(Math.random()*bc.width*0.3, lineY, bc.width*(0.3+Math.random()*0.5), 1.2);
+   bctx.restore();
+  }
+  for(var n=0;n<14;n++){
+   bctx.save(); bctx.globalAlpha=0.25+Math.random()*0.4;
+   bctx.fillStyle=Math.random()<0.5?'#fff':'#5ee7ff';
+   bctx.fillRect(Math.random()*bc.width, Math.random()*bc.height, 1.5+Math.random()*2.5, 1.5);
+   bctx.restore();
+  }
  }
+
+ // ===== 3. POTONG JADI OVAL LEMBUT - INI KUNCINYA BIAR GAK PERSEGI =====
+ // Kita bikin topeng oval yang pinggirnya gradasi (putih di tengah, transparan di pinggir)
+ // Terus kita potong blur tadi pake topeng itu, jadi pinggirnya NYATU, gak ada siku
+ if(!window._sensorMask) window._sensorMask=document.createElement('canvas');
+ var mc=window._sensorMask;
+ mc.width=bc.width; mc.height=bc.height;
+ var mctx=mc.getContext('2d');
+ mctx.clearRect(0,0,mc.width,mc.height);
+ // Bikin gradasi oval: tengah putih penuh, pinggir mulai hilang
+ var grad=mctx.createRadialGradient(mc.width/2, mc.height/2, Math.min(mc.width,mc.height)*0.18, mc.width/2, mc.height/2, Math.max(mc.width,mc.height)*0.52);
+ // Ini bentuknya oval karena kita gambar ellipse, bukan kotak
+ grad.addColorStop(0,'rgba(255,255,255,1)');
+ grad.addColorStop(0.62,'rgba(255,255,255,1)');
+ grad.addColorStop(0.82,'rgba(255,255,255,0.55)');
+ grad.addColorStop(1,'rgba(255,255,255,0)');
+ mctx.fillStyle=grad;
+ mctx.save();
+ // Skala biar gradasi nya ngikutin oval, bukan bulet
+ mctx.translate(mc.width/2, mc.height/2);
+ mctx.scale(1, mc.height/mc.width);
+ mctx.translate(-mc.width/2, -mc.height/2);
+ mctx.beginPath();
+ mctx.arc(mc.width/2, mc.height/2, mc.width/2, 0, Math.PI*2);
+ mctx.fill();
+ mctx.restore();
+ // Potong blur pake topeng oval lembut ini
+ bctx.globalCompositeOperation='destination-in';
+ bctx.drawImage(mc, 0, 0);
+ bctx.globalCompositeOperation='source-over';
+
+ // ===== 4. TEMPEL KE MUKA LU - UDAH OVAL, UDAH LEMBUT =====
+ fctx.save();
+ fctx.drawImage(bc, x, y);
+ fctx.restore();
+}
  fctx.restore();
  fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2+14,rh/2+14,0,0,Math.PI*2);fctx.clip();fctx.globalAlpha=0.35;fctx.imageSmoothingEnabled=true;fctx.drawImage(small,x-6,y-6,rw+12,rh+12);fctx.globalAlpha=1;fctx.restore();
 }
