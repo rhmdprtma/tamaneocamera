@@ -213,7 +213,6 @@ function drawVideoCover(ctx,cw,ch){
  ctx.drawImage(video,dx,dy,dw,dh);
  ctx.restore();
 }
-// === CANVAS TAMPILAN - BUAT SENSOR NEMPEL 1:1, GAK MELESET LAGI ===
 function getDisplayCanvas(){
  if(!window._displayCanvas){ window._displayCanvas=document.createElement('canvas'); }
  var dc=window._displayCanvas;
@@ -260,7 +259,6 @@ function drawSensor(){
  if(!cur)return;
  if(face){ lastFace={x:face.x,y:face.y,w:face.w,h:face.h}; }else{ cur={x:lastFace.x,y:lastFace.y,w:lastFace.w,h:lastFace.h}; lastFace=cur; }
  if(!smoothFace){ smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h}; }
- // .88 biar nempel cepet, gak delay, gak ngawur
  smoothFace.x=lerp(smoothFace.x,cur.x,.88);
  smoothFace.y=lerp(smoothFace.y,cur.y,.88);
  smoothFace.w=lerp(smoothFace.w,cur.w,.88);
@@ -268,12 +266,10 @@ function drawSensor(){
  var s=smoothFace;
  var cx=s.x;
  var cy=s.y;
- // OVAL PAS MUKA DOANG - BUKAN KOTAK, BUKAN BAND
  var rw=Math.max(150,s.w*1.08);
  var rh=Math.max(190,s.h*1.12);
  var x=cx-rw/2;
  var y=cy-rh/2;
- // Ambil muka dari canvas tampilan (udah mirror + cover) - jadi 1:1, gak meleset
  var disp=getDisplayCanvas();
  if(!window._sensorSrc) window._sensorSrc=document.createElement('canvas');
  var src=window._sensorSrc;
@@ -283,7 +279,6 @@ function drawSensor(){
  sctx.clearRect(0,0,src.width,src.height);
  var sx=Math.max(0,Math.min(W-rw,x));
  var sy=Math.max(0,Math.min(H-rh,y));
- // x,y buat gambar akhir tetep pake cx,cy asli biar nempel, tapi crop pake sx,sy yang di-clamp
  try{ sctx.drawImage(disp,sx,sy,rw,rh,0,0,src.width,src.height); }catch(e){ return; }
  if(!window._sensorBand) window._sensorBand=document.createElement('canvas');
  var bc=window._sensorBand;
@@ -291,7 +286,6 @@ function drawSensor(){
  var bctx=bc.getContext('2d');
  bctx.clearRect(0,0,bc.width,bc.height);
  bctx.imageSmoothingEnabled=true; bctx.imageSmoothingQuality='high';
- // 1. HANCURIN MUKA - pixelate 12x12, mata hidung mulut langsung keacak-acak
  if(!window._sensorTiny) window._sensorTiny=document.createElement('canvas');
  var tiny=window._sensorTiny;
  tiny.width=12; tiny.height=14;
@@ -302,24 +296,20 @@ function drawSensor(){
  bctx.imageSmoothingEnabled=false;
  bctx.drawImage(tiny,0,0,bc.width,bc.height);
  bctx.imageSmoothingEnabled=true;
- // 2. Smear horizontal kuat kaya referensi - 25x, enteng karena canvas kecil
  bctx.save();
  bctx.globalAlpha=.22;
  for(var i=-12;i<=12;i++){
   bctx.drawImage(src,i*5,0,bc.width,bc.height);
  }
  bctx.restore();
- // 3. Lapisan kedua pixelate lagi biar makin hancur (tanpa filter blur yang bikin ngelag)
  bctx.save();
  bctx.globalAlpha=.55;
  bctx.imageSmoothingEnabled=false;
  bctx.drawImage(tiny,0,0,bc.width,bc.height);
  bctx.restore();
  bctx.imageSmoothingEnabled=true;
- // 4. Overlay abu-abu tipis biar warna kulit gak tembus
  bctx.fillStyle='rgba(30,32,38,0.28)';
  bctx.fillRect(0,0,bc.width,bc.height);
- // Glitch - SAMA KAYA PUNYA LU YANG UDAH BAGUS
  var glitch=Math.random()<.16;
  if(glitch){
   for(var g=0;g<3;g++){
@@ -348,14 +338,11 @@ function drawSensor(){
    bctx.fillRect(Math.random()*bc.width*.3,Math.random()*bc.height,bc.width*(.3+Math.random()*.5),1);
   }
  }
- // === MASK OVAL - INI KUNCINYA BIAR GAK SEGIEMPAT ===
- // Bukan kotak lagi, tapi oval ngikutin bentuk muka, pinggirnya feather lembut
  if(!window._sensorMask) window._sensorMask=document.createElement('canvas');
  var mc=window._sensorMask;
  mc.width=bc.width; mc.height=bc.height;
  var mctx=mc.getContext('2d');
  mctx.clearRect(0,0,mc.width,mc.height);
- // Gradasi oval: tengah penuh, pinggir hilang pelan-pelan
  var grad=mctx.createRadialGradient(mc.width/2,mc.height/2,Math.min(mc.width,mc.height)*0.12,mc.width/2,mc.height/2,Math.max(mc.width,mc.height)*0.52);
  grad.addColorStop(0,'rgba(255,255,255,1)');
  grad.addColorStop(.55,'rgba(255,255,255,1)');
@@ -392,7 +379,8 @@ function drawPortalQuad(pts){
  shapePath(fctx,portalShape,cx,cy,w*.94,h*.94);fctx.clip();
  var grad=fctx.createLinearGradient(cx-w*.5,cy-h*.5,cx+w*.5,cy+h*.5);grad.addColorStop(0,palette.a);grad.addColorStop(.52,palette.b);grad.addColorStop(1,palette.c);
  fctx.globalAlpha=.52;fctx.fillStyle=grad;fctx.fillRect(cx-w,cy-h,w*2,h*2);
- fctx.save();fctx.globalAlpha=.42;fctx.drawVideoCover(fctx,W,H);fctx.restore();
+ // FIX PORTAL FREEZE - YANG BENER drawVideoCover(fctx...), BUKAN fctx.drawVideoCover
+ fctx.save();fctx.globalAlpha=.42;drawVideoCover(fctx,W,H);fctx.restore();
  fctx.globalAlpha=.35;for(var k=0;k<22;k++){var yy=cy-h*.5+((k/22*h+t*36)%h);fctx.fillStyle=k%2?'#ffffff':'#06111d';fctx.fillRect(cx-w*.6,yy,w*1.2,1.2)}
  fctx.save();fctx.translate(cx,cy);fctx.rotate(t*.28);fctx.globalAlpha=.48;for(var r=0;r<5;r++){fctx.beginPath();fctx.ellipse(0,0,w*(.13+r*.085),h*(.13+r*.085),0,0,Math.PI*2);fctx.strokeStyle=r%2?palette.c:palette.a;fctx.lineWidth=1.4+r*.25;fctx.shadowColor=fctx.strokeStyle;fctx.shadowBlur=13;fctx.stroke()}fctx.restore();
  for(var sp=0;sp<18;sp++){var ang=t*.7+sp*2.399,rr=.12+(sp%6)*.065;var sx=cx+Math.cos(ang)*w*rr,sy=cy+Math.sin(ang)*h*rr;fctx.fillStyle='#fff';fctx.shadowColor=palette.a;fctx.shadowBlur=12;fctx.beginPath();fctx.arc(sx,sy,1+sp%3,0,Math.PI*2);fctx.fill()}
@@ -403,21 +391,27 @@ function drawGlow(x,y){
 if(glowMode==='duit'){if(Math.random()<0.35&&moneyParticles.length<28){moneyParticles.push({x:x+(Math.random()-0.5)*40,y:y-10,vy:1+Math.random()*2.2,vx:(Math.random()-0.5)*1.4,rot:Math.random()*360,vr:(Math.random()-0.5)*8,life:1,txt:Math.random()<0.5?'💵':'💶',size:18+Math.random()*10})}if(particles.length<90){particles.push({x:x,y:y,vx:(Math.random()-0.5)*1.2,vy:-0.8-Math.random()*1.4,life:1,decay:0.015,size:3+Math.random()*5,color:Math.random()<0.5?'#facc15':'#fff7cc',spark:true})}}else{var col=glowMode==='pink'?'#ec4899':glowMode==='cyan'?'#22d3ee':'#a855f7';if(particles.length<100){particles.push({x:x,y:y,vx:(Math.random()-0.5)*1,vy:(Math.random()-0.5)*1-0.5,life:1,decay:0.02,size:5+Math.random()*8,color:col,spark:false})}if(Math.random()<0.12){particles.push({x:x+(Math.random()-0.5)*50,y:y+(Math.random()-0.5)*50,vx:0,vy:-0.4,life:1,decay:0.012,size:8+Math.random()*6,color:'#ffffff',spark:true})}}
 }
 function loop(){
-fctx.clearRect(0,0,W,H);
-if(effectsOn.sensor)drawSensor();
-if(Date.now()-lastHandTime>600)handsData=[];
-document.getElementById('handTxt').textContent=handsData.length+' TANGAN';
-var portalHands=[];
-for(var idx=0;idx<handsData.length;idx++){var hand=handsData[idx];var lm=hand.landmarks;var key=idx===0?'left':'right';var sm=smoothHand(key,mx(lm[8].x),my(lm[8].y));var px=sm.x,py=sm.y;var pc=getPalmCenter(lm);var palmSm=smoothPalmPt(key,mx(pc.x),my(pc.y));
-if(effectsOn.fire&&isPalmOpen(lm)){drawRealFire(palmSm.x,palmSm.y,fireSize,key)}else if(fireParticles[key]){fireParticles[key].length=0}
-if(effectsOn.glow&&isIndexUp(lm)){drawGlow(px,py)}
-if(effectsOn.draw&&isIndexUp(lm)){if(!smoothDraw[key])smoothDraw[key]={x:px,y:py};smoothDraw[key].x=lerp(smoothDraw[key].x,px,0.45);smoothDraw[key].y=lerp(smoothDraw[key].y,py,0.45);var sx=smoothDraw[key].x,sy=smoothDraw[key].y;if(lastDraw[key]){var midX=(lastDraw[key].x+sx)/2,midY=(lastDraw[key].y+sy)/2;dctx.strokeStyle=drawColor;dctx.lineWidth=drawSize;dctx.lineCap='round';dctx.lineJoin='round';dctx.shadowColor=drawColor;dctx.shadowBlur=10;dctx.beginPath();dctx.moveTo(lastDraw[key].x,lastDraw[key].y);dctx.quadraticCurveTo(lastDraw[key].x,lastDraw[key].y,midX,midY);dctx.lineTo(sx,sy);dctx.stroke();dctx.shadowBlur=0}lastDraw[key]={x:sx,y:sy}}else{lastDraw[key]=null;smoothDraw[key]=null}
-if(effectsOn.portal&&isPortalPose(lm)){var thumbPoint={x:mx(lm[4].x),y:my(lm[4].y)};var indexPoint={x:mx(lm[8].x),y:my(lm[8].y)};portalHands.push({centerX:(thumbPoint.x+indexPoint.x)/2,points:[thumbPoint,indexPoint]})}}
-if(effectsOn.portal&&portalHands.length>=2){portalHands.sort(function(a,b){return a.centerX-b.centerX});var leftPair=portalHands[0].points.slice().sort(function(a,b){return a.y-b.y});var rightPair=portalHands[1].points.slice().sort(function(a,b){return a.y-b.y});drawPortalQuad([leftPair[0],rightPair[0],rightPair[1],leftPair[1]])}
-particles=particles.filter(function(p){return p.life>0});for(var pi=0;pi<particles.length;pi++){var p=particles[pi];p.life-=p.decay;p.x+=p.vx;p.y+=p.vy;p.vy+=0.02;fctx.save();fctx.globalAlpha=Math.max(0,p.life);fctx.fillStyle=p.color;if(p.spark){fctx.shadowColor=p.color;fctx.shadowBlur=12}fctx.beginPath();if(p.spark){fctx.font='900 '+(p.size*2)+'px system-ui';fctx.fillText('✦',p.x,p.y)}else{fctx.arc(p.x,p.y,Math.max(1,p.size*p.life),0,Math.PI*2);fctx.fill()}fctx.restore()}
-moneyParticles=moneyParticles.filter(function(p){return p.life>0});for(var mi=0;mi<moneyParticles.length;mi++){var mp=moneyParticles[mi];mp.life-=0.012;mp.x+=mp.vx;mp.y+=mp.vy;mp.rot+=mp.vr;fctx.save();fctx.globalAlpha=Math.max(0,mp.life);fctx.translate(mp.x,mp.y);fctx.rotate(mp.rot*Math.PI/180);fctx.font='900 '+mp.size+'px system-ui';fctx.textAlign='center';fctx.textBaseline='middle';fctx.shadowColor='rgba(250,204,21,0.9)';fctx.shadowBlur=10;fctx.fillText(mp.txt,0,0);fctx.restore()}
-fpsFrames++;if(Date.now()-fpsTime>1000){document.getElementById('fps').textContent=Math.round(fpsFrames*1000/(Date.now()-fpsTime))+' FPS';fpsFrames=0;fpsTime=Date.now()}
-requestAnimationFrame(loop);
+ // PENGAMAN - KALO ADA EFEK ERROR, LOOP TETEP JALAN, GAK FREEZE TOTAL LAGI
+ try{
+  fctx.clearRect(0,0,W,H);
+  if(effectsOn.sensor){ try{ drawSensor(); }catch(e){} }
+  if(Date.now()-lastHandTime>600)handsData=[];
+  document.getElementById('handTxt').textContent=handsData.length+' TANGAN';
+  var portalHands=[];
+  for(var idx=0;idx<handsData.length;idx++){var hand=handsData[idx];var lm=hand.landmarks;var key=idx===0?'left':'right';var sm=smoothHand(key,mx(lm[8].x),my(lm[8].y));var px=sm.x,py=sm.y;var pc=getPalmCenter(lm);var palmSm=smoothPalmPt(key,mx(pc.x),my(pc.y));
+  try{ if(effectsOn.fire&&isPalmOpen(lm)){drawRealFire(palmSm.x,palmSm.y,fireSize,key)}else if(fireParticles[key]){fireParticles[key].length=0} }catch(e){}
+  try{ if(effectsOn.glow&&isIndexUp(lm)){drawGlow(px,py)} }catch(e){}
+  try{
+   if(effectsOn.draw&&isIndexUp(lm)){if(!smoothDraw[key])smoothDraw[key]={x:px,y:py};smoothDraw[key].x=lerp(smoothDraw[key].x,px,0.45);smoothDraw[key].y=lerp(smoothDraw[key].y,py,0.45);var sx=smoothDraw[key].x,sy=smoothDraw[key].y;if(lastDraw[key]){var midX=(lastDraw[key].x+sx)/2,midY=(lastDraw[key].y+sy)/2;dctx.strokeStyle=drawColor;dctx.lineWidth=drawSize;dctx.lineCap='round';dctx.lineJoin='round';dctx.shadowColor=drawColor;dctx.shadowBlur=10;dctx.beginPath();dctx.moveTo(lastDraw[key].x,lastDraw[key].y);dctx.quadraticCurveTo(lastDraw[key].x,lastDraw[key].y,midX,midY);dctx.lineTo(sx,sy);dctx.stroke();dctx.shadowBlur=0}lastDraw[key]={x:sx,y:sy}}else{lastDraw[key]=null;smoothDraw[key]=null}
+  }catch(e){}
+  try{ if(effectsOn.portal&&isPortalPose(lm)){var thumbPoint={x:mx(lm[4].x),y:my(lm[4].y)};var indexPoint={x:mx(lm[8].x),y:my(lm[8].y)};portalHands.push({centerX:(thumbPoint.x+indexPoint.x)/2,points:[thumbPoint,indexPoint]})} }catch(e){}
+  }
+  try{ if(effectsOn.portal&&portalHands.length>=2){portalHands.sort(function(a,b){return a.centerX-b.centerX});var leftPair=portalHands[0].points.slice().sort(function(a,b){return a.y-b.y});var rightPair=portalHands[1].points.slice().sort(function(a,b){return a.y-b.y});drawPortalQuad([leftPair[0],rightPair[0],rightPair[1],leftPair[1]])} }catch(e){}
+  particles=particles.filter(function(p){return p.life>0});for(var pi=0;pi<particles.length;pi++){var p=particles[pi];p.life-=p.decay;p.x+=p.vx;p.y+=p.vy;p.vy+=0.02;fctx.save();fctx.globalAlpha=Math.max(0,p.life);fctx.fillStyle=p.color;if(p.spark){fctx.shadowColor=p.color;fctx.shadowBlur=12}fctx.beginPath();if(p.spark){fctx.font='900 '+(p.size*2)+'px system-ui';fctx.fillText('✦',p.x,p.y)}else{fctx.arc(p.x,p.y,Math.max(1,p.size*p.life),0,Math.PI*2);fctx.fill()}fctx.restore()}
+  moneyParticles=moneyParticles.filter(function(p){return p.life>0});for(var mi=0;mi<moneyParticles.length;mi++){var mp=moneyParticles[mi];mp.life-=0.012;mp.x+=mp.vx;mp.y+=mp.vy;mp.rot+=mp.vr;fctx.save();fctx.globalAlpha=Math.max(0,mp.life);fctx.translate(mp.x,mp.y);fctx.rotate(mp.rot*Math.PI/180);fctx.font='900 '+mp.size+'px system-ui';fctx.textAlign='center';fctx.textBaseline='middle';fctx.shadowColor='rgba(250,204,21,0.9)';fctx.shadowBlur=10;fctx.fillText(mp.txt,0,0);fctx.restore()}
+  fpsFrames++;if(Date.now()-fpsTime>1000){document.getElementById('fps').textContent=Math.round(fpsFrames*1000/(Date.now()-fpsTime))+' FPS';fpsFrames=0;fpsTime=Date.now()}
+ }catch(e){}
+ requestAnimationFrame(loop);
 }
 function resize(){W=window.innerWidth;H=window.innerHeight;fx.width=W;fx.height=H;draw.width=W;draw.height=H}
 resize();window.addEventListener('resize',resize);
