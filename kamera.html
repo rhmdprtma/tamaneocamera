@@ -182,8 +182,7 @@ var fireMode='asli';var fireSize=1;var glowMode='duit';var drawColor='#a855f7';v
 var handsData=[];var face=null;var lastFace=null;var faceVel={x:0,y:0};
 var particles=[];var fireParticles={left:[],right:[]};var moneyParticles=[];
 var lastDraw={left:null,right:null};var smoothDraw={left:null,right:null};var smoothPos={left:null,right:null};var smoothPalm={left:null,right:null};var smoothFace=null;var history=[];
-var fpsFrames=0;var fpsTime=Date.now();var frameCount=0;var lastHandTime=0;var portalIdx=0;var lastPortalChange=Date.now();
-var portalEffects=['NEON','HOLOGRAM','EMAS','AURORA','X-RAY','GALAXY'];
+var fpsFrames=0;var fpsTime=Date.now();var frameCount=0;var lastHandTime=0;var lastPortalChange=Date.now();
 var loopStarted=false;var smoothPortal={tl:null,tr:null,bl:null,br:null};var isFakeFull=false;
 var noiseCanvas=document.createElement('canvas');noiseCanvas.width=260;noiseCanvas.height=260;var noiseCtx=noiseCanvas.getContext('2d');
 function mx(nx){return (1-nx)*W}
@@ -198,21 +197,17 @@ function isIndexUp(lm){return fingerExtended(lm,8,6)}
 function isPortalPose(lm){var thumbOpen=dist2(lm[4],lm[5])>dist2(lm[3],lm[5])*1.08;var indexOpen=fingerExtended(lm,8,6);var middleClosed=!fingerExtended(lm,12,10);var ringClosed=!fingerExtended(lm,16,14);var pinkyClosed=!fingerExtended(lm,20,18);return thumbOpen&&indexOpen&&middleClosed&&ringClosed&&pinkyClosed}
 function isPalmOpen(lm){var extended=[fingerExtended(lm,8,6),fingerExtended(lm,12,10),fingerExtended(lm,16,14),fingerExtended(lm,20,18)];var count=extended.filter(Boolean).length;return count>=3}
 function getPalmCenter(lm){var pts=[lm[0],lm[5],lm[9],lm[13],lm[17]];var sx=0,sy=0;for(var i=0;i<pts.length;i++){sx+=pts[i].x;sy+=pts[i].y}return {x:sx/pts.length,y:sy/pts.length}}
-// ===== FIX UTAMA: GAMBAR VIDEO SAMA PERSIS KAYA DI LAYAR =====
-// Video di layar itu: mirror (scaleX -1) + object-fit cover (di-crop, bukan di-stretch)
-// Fungsi ini dipakai di FOTO, VIDEO, dan di DALEM PORTAL. Jadi hasil download = apa yang lu liat.
 function drawVideoCover(ctx,cw,ch){
-  var vw=video.videoWidth||cw, vh=video.videoHeight||ch;
-  if(!vw||!vh) return;
-  var scale=Math.max(cw/vw, ch/vh);
-  var dw=vw*scale, dh=vh*scale;
-  var dx=(cw-dw)/2, dy=(ch-dh)/2;
-  ctx.save();
-  // Mirror: geser ke kanan penuh lalu balik. Ini bikin tangan kanan tetep di kanan.
-  ctx.translate(cw,0);
-  ctx.scale(-1,1);
-  ctx.drawImage(video,dx,dy,dw,dh);
-  ctx.restore();
+ var vw=video.videoWidth||cw, vh=video.videoHeight||ch;
+ if(!vw||!vh) return;
+ var scale=Math.max(cw/vw, ch/vh);
+ var dw=vw*scale, dh=vh*scale;
+ var dx=(cw-dw)/2, dy=(ch-dh)/2;
+ ctx.save();
+ ctx.translate(cw,0);
+ ctx.scale(-1,1);
+ ctx.drawImage(video,dx,dy,dw,dh);
+ ctx.restore();
 }
 var subMenu=document.getElementById('subMenu');
 var subTitleTxt=document.getElementById('subTitleTxt');
@@ -226,7 +221,7 @@ if(name==='portal'){subTitleTxt.textContent='🌀 PORTAL - AUTO EFEK';document.g
 if(name==='api'){subTitleTxt.textContent='🔥 API - TENGAH TELAPAK';document.getElementById('modeTxt').textContent='Api';document.getElementById('hintTxt').textContent='✋ Api PAS di tengah telapak tangan lu';subContent.innerHTML='<div class="row"><button class="btn active" data-fire="asli">🔥 REAL FIRE</button><button class="btn" data-fire="biru">💙 BLUE</button><button class="btn" data-fire="ungu">💜 VIOLET</button><button class="btn" data-fire="hijau">💚 GREEN</button></div><div class="row" style="margin-top:6px"><button class="btn" data-size="0.7">Kecil</button><button class="btn active" data-size="1">Sedang</button><button class="btn" data-size="1.6">Besar</button></div><div style="font-size:11px;opacity:.76;margin-top:5px">Api muncul di kedua telapak saat tangan terbuka dan padam saat tangan mengepal.</div>';addFeatureSwitch('fire','API DUA TELAPAK');var fb=subContent.querySelectorAll('[data-fire]');for(var a=0;a<fb.length;a++){fb[a].onclick=(function(b){return function(){var f=subContent.querySelectorAll('[data-fire]');for(var k=0;k<f.length;k++)f[k].classList.remove('active');b.classList.add('active');fireMode=b.getAttribute('data-fire')}})(fb[a])}var sb=subContent.querySelectorAll('[data-size]');for(var b=0;b<sb.length;b++){sb[b].onclick=(function(btn){return function(){var s=subContent.querySelectorAll('[data-size]');for(var k=0;k<s.length;k++)s[k].classList.remove('active');btn.classList.add('active');fireSize=parseFloat(btn.getAttribute('data-size'))}})(sb[b])}}
 if(name==='glow'){subTitleTxt.textContent='💸 GLOW - DUIT + ESTETIK';document.getElementById('modeTxt').textContent='Glow Duit';document.getElementById('hintTxt').textContent='👆 Telunjuk = Duit + Glow keluar, estetik!';subContent.innerHTML='<div class="row"><button class="btn active" data-glow="duit">💸 Duit + Emas</button><button class="btn" data-glow="pink">🩷 Pink Estetik</button><button class="btn" data-glow="cyan">🔵 Cyan Glow</button><button class="btn" data-glow="ungu">🟣 Ungu Glow</button></div><div style="font-size:11px;opacity:.7;margin-top:6px">Mode Duit: ada lembaran duit 💵 jatuh + sparkle emas. Mode lain: glow halus + bintang.</div>';addFeatureSwitch('glow','GLOW + PARTIKEL');var gb=subContent.querySelectorAll('[data-glow]');for(var g=0;g<gb.length;g++){gb[g].onclick=(function(btn){return function(){var gg=subContent.querySelectorAll('[data-glow]');for(var k=0;k<gg.length;k++)gg[k].classList.remove('active');btn.classList.add('active');glowMode=btn.getAttribute('data-glow')}})(gb[g])}}
 if(name==='draw'){subTitleTxt.textContent='✍️ GAMBAR - HALUS';document.getElementById('modeTxt').textContent='Gambar';document.getElementById('hintTxt').textContent='👆 Telunjuk = Gambar halus, gak goyang';subContent.innerHTML='<div class="row"><button class="btn active" data-draw="#a855f7">🟣 Ungu</button><button class="btn" data-draw="#ec4899">🩷 Pink</button><button class="btn" data-draw="#22d3ee">🔵 Cyan</button><button class="btn" data-draw="#facc15">🟡 Kuning</button><button class="btn" data-draw="#ffffff">⚪ Putih</button></div><div class="row" style="margin-top:6px"><button class="btn active" data-thick="7">Tipis</button><button class="btn" data-thick="12">Tebal</button><button class="btn" data-thick="18">GEDE</button><button class="btn" id="undoBtn2">↩ Undo</button><button class="btn" id="clearBtn2" style="background:#ef4444">🗑 Hapus</button></div>';addFeatureSwitch('draw','AIR DRAWING');var db=subContent.querySelectorAll('[data-draw]');for(var d=0;d<db.length;d++){db[d].onclick=(function(btn){return function(){var dd=subContent.querySelectorAll('[data-draw]');for(var k=0;k<dd.length;k++)dd[k].classList.remove('active');btn.classList.add('active');drawColor=btn.getAttribute('data-draw')}})(db[d])}var tb=subContent.querySelectorAll('[data-thick]');for(var t=0;t<tb.length;t++){tb[t].onclick=(function(btn){return function(){var tt=subContent.querySelectorAll('[data-thick]');for(var k=0;k<tt.length;k++)tt[k].classList.remove('active');btn.classList.add('active');drawSize=parseFloat(btn.getAttribute('data-thick'))}})(tb[t])}document.getElementById('undoBtn2').onclick=function(){if(history.length>0)dctx.putImageData(history.pop(),0,0)};document.getElementById('clearBtn2').onclick=function(){try{history.push(dctx.getImageData(0,0,W,H))}catch(e){}dctx.clearRect(0,0,W,H);lastDraw={left:null,right:null};smoothDraw={left:null,right:null}}}
-if(name==='sensor'){subTitleTxt.textContent='📺 SENSOR - IKUT MUKA';document.getElementById('modeTxt').textContent='Sensor';document.getElementById('hintTxt').textContent='📺 Sensor bulet nutupin muka lu aja, bukan kotak';subContent.innerHTML='<div style="font-size:11px;opacity:.76;margin-top:6px;line-height:1.5">Face scanner monokrom mengikuti wajah secara real-time.</div>';addFeatureSwitch('sensor','FACE SCANNER');sensorOn=effectsOn.sensor}
+if(name==='sensor'){subTitleTxt.textContent='📺 SENSOR - IKUT MUKA';document.getElementById('modeTxt').textContent='Sensor';document.getElementById('hintTxt').textContent='📺 Sensor bulet nutupin muka lu aja';subContent.innerHTML='<div style="font-size:11px;opacity:.76;margin-top:6px;line-height:1.5">Face sensor blur estetik mengikuti wajah secara real-time.</div>';addFeatureSwitch('sensor','FACE SENSOR BLUR');sensorOn=effectsOn.sensor}
 }
 var menuBtns=document.querySelectorAll('.mbtn');
 for(var m=0;m<menuBtns.length;m++){menuBtns[m].onclick=(function(btn){return function(){if(currentMenu===btn.getAttribute('data-menu'))closeMenu();else openMenu(btn.getAttribute('data-menu'))}})(menuBtns[m])}
@@ -244,20 +239,37 @@ function drawRealFire(x,y,scale,key){
  for(var j=list.length-1;j>=0;j--){var p=list[j];p.x+=p.vx;p.y+=p.vy;p.life-=.025;p.vx+=(Math.random()-.5)*.12;if(p.life<=0){list.splice(j,1);continue}fctx.save();fctx.globalCompositeOperation='lighter';fctx.globalAlpha=p.life;fctx.fillStyle=palette[2];fctx.shadowColor=palette[2];fctx.shadowBlur=9;fctx.beginPath();fctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);fctx.fill();fctx.restore()}
 }
 function makeNoise(){var img=noiseCtx.createImageData(260,260);for(var i=0;i<img.data.length;i+=4){var v=110+Math.random()*145;img.data[i]=v;img.data[i+1]=v;img.data[i+2]=v;img.data[i+3]=255}noiseCtx.putImageData(img,0,0)}
-var sensorNoiseStamp=0;makeNoise();
+makeNoise();
 function drawSensor(){
- if(!effectsOn.sensor||!sensorOn)return;var cur=face||lastFace;if(!cur)return;
+ if(!effectsOn.sensor||!sensorOn)return;
+ var cur=face||lastFace;if(!cur)return;
  if(face){if(lastFace){faceVel.x=lerp(faceVel.x,face.x-lastFace.x,.24);faceVel.y=lerp(faceVel.y,face.y-lastFace.y,.24)}lastFace={x:face.x,y:face.y,w:face.w,h:face.h}}else{cur={x:lastFace.x+faceVel.x*1.5,y:lastFace.y+faceVel.y*1.5,w:lastFace.w,h:lastFace.h};lastFace=cur}
- if(!smoothFace)smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h};smoothFace.x=lerp(smoothFace.x,cur.x,.42);smoothFace.y=lerp(smoothFace.y,cur.y,.42);smoothFace.w=lerp(smoothFace.w,cur.w,.38);smoothFace.h=lerp(smoothFace.h,cur.h,.38);
- var s=smoothFace,cx=s.x,cy=s.y,t=Date.now()*.001;var rw=Math.max(118,s.w*1.72),rh=Math.max(92,s.h*1.48);var x=cx-rw/2,y=cy-rh/2;
- if(Date.now()-sensorNoiseStamp>72){makeNoise();sensorNoiseStamp=Date.now()}
- fctx.save();fctx.globalAlpha=.98;fctx.shadowColor='rgba(220,230,240,.16)';fctx.shadowBlur=18;fctx.fillStyle='#08090b';fctx.fillRect(x-2,y-2,rw+4,rh+4);fctx.shadowBlur=0;
- fctx.save();var rad=Math.min(5,rw*.018);fctx.beginPath();fctx.moveTo(x+rad,y);fctx.lineTo(x+rw-rad,y);fctx.quadraticCurveTo(x+rw,y,x+rw,y+rad);fctx.lineTo(x+rw,y+rh-rad);fctx.quadraticCurveTo(x+rw,y+rh,x+rw-rad,y+rh);fctx.lineTo(x+rad,y+rh);fctx.quadraticCurveTo(x,y+rh,x,y+rh-rad);fctx.lineTo(x,y+rad);fctx.quadraticCurveTo(x,y,x+rad,y);fctx.closePath();fctx.clip();
- fctx.globalAlpha=.92;fctx.imageSmoothingEnabled=false;fctx.drawImage(noiseCanvas,x,y,rw,rh);fctx.imageSmoothingEnabled=true;
- fctx.globalAlpha=.26;for(var yy=y;yy<y+rh;yy+=3){fctx.fillStyle=((Math.floor(yy/3)%2)===0)?'#050608':'#ffffff';fctx.fillRect(x,yy,rw,1)}
- fctx.globalAlpha=.24;for(var k=0;k<5;k++){var bandY=y+((k*47+t*68)%(rh));var bandH=1+(k%3);fctx.fillStyle=k%2?'#f4f4f4':'#020304';fctx.fillRect(x,bandY,rw,bandH);if(k%2===0){fctx.globalAlpha=.12;fctx.fillRect(x+Math.sin(t*2+k)*rw*.08,bandY+2,rw*.72,1);fctx.globalAlpha=.24}}
- var pulse=.035+((Math.sin(t*3.2)+1)*.018);fctx.globalAlpha=pulse;fctx.fillStyle='#ffffff';fctx.fillRect(x,y,rw,rh);fctx.restore();
- fctx.globalAlpha=.5;fctx.strokeStyle='rgba(220,230,240,.34)';fctx.lineWidth=1;fctx.strokeRect(x+.5,y+.5,rw-1,rh-1);fctx.restore();
+ if(!smoothFace)smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h};
+ smoothFace.x=lerp(smoothFace.x,cur.x,.42);smoothFace.y=lerp(smoothFace.y,cur.y,.42);smoothFace.w=lerp(smoothFace.w,cur.w,.38);smoothFace.h=lerp(smoothFace.h,cur.h,.38);
+ var s=smoothFace,cx=s.x,cy=s.y,t=Date.now()*0.001;
+ var rw=Math.max(135,s.w*1.58);var rh=Math.max(170,s.h*1.82);var x=cx-rw/2,y=cy-rh/2;
+ fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.clip();
+ fctx.filter='blur(22px) brightness(0.92) saturate(0.8)';drawVideoCover(fctx,W,H);fctx.filter='none';
+ fctx.fillStyle='rgba(8,18,32,0.22)';fctx.fillRect(x,y,rw,rh);
+ var glassGrad=fctx.createLinearGradient(0,y,0,y+rh);glassGrad.addColorStop(0,'rgba(255,255,255,0.14)');glassGrad.addColorStop(0.35,'rgba(255,255,255,0.02)');glassGrad.addColorStop(1,'rgba(0,0,0,0.18)');fctx.fillStyle=glassGrad;fctx.fillRect(x,y,rw,rh);fctx.restore();
+ fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.clip();
+ var scanY=y+((Math.sin(t*1.4)*0.5+0.5)*rh);
+ var scanGrad=fctx.createLinearGradient(0,scanY-14,0,scanY+14);scanGrad.addColorStop(0,'rgba(94,231,255,0)');scanGrad.addColorStop(0.5,'rgba(94,231,255,0.35)');scanGrad.addColorStop(1,'rgba(155,123,255,0)');fctx.fillStyle=scanGrad;fctx.fillRect(x,scanY-14,rw,28);
+ fctx.fillStyle='rgba(220,250,255,0.55)';fctx.fillRect(x,scanY-0.8,rw,1.6);
+ for(var d=0;d<22;d++){var dx=x+Math.random()*rw;var dy=y+Math.random()*rh;var nx=(dx-cx)/(rw/2),ny=(dy-cy)/(rh/2);if(nx*nx+ny*ny>1)continue;fctx.fillStyle='rgba(255,255,255,'+(0.15+Math.random()*0.25)+')';fctx.beginPath();fctx.arc(dx,dy,0.8+Math.random()*1.1,0,Math.PI*2);fctx.fill()}
+ fctx.restore();
+ fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);
+ var borderGrad=fctx.createLinearGradient(x,y,x+rw,y+rh);borderGrad.addColorStop(0,'#5ee7ff');borderGrad.addColorStop(0.5,'#a8baff');borderGrad.addColorStop(1,'#ff4fd8');
+ fctx.strokeStyle=borderGrad;fctx.lineWidth=2.2;fctx.shadowColor='rgba(94,231,255,0.8)';fctx.shadowBlur=18;fctx.stroke();fctx.shadowBlur=0;
+ fctx.beginPath();fctx.ellipse(cx,cy,rw/2+5,rh/2+5,0,0,Math.PI*2);fctx.strokeStyle='rgba(255,255,255,0.22)';fctx.lineWidth=1;fctx.stroke();fctx.restore();
+ fctx.save();fctx.strokeStyle='rgba(220,250,255,0.9)';fctx.lineWidth=2.5;fctx.shadowColor='#5ee7ff';fctx.shadowBlur=10;fctx.lineCap='round';var corner=16,gap=6;
+ fctx.beginPath();fctx.moveTo(cx-rw/2-gap,cy-rh/2+corner);fctx.lineTo(cx-rw/2-gap,cy-rh/2-gap);fctx.lineTo(cx-rw/2+corner,cy-rh/2-gap);fctx.stroke();
+ fctx.beginPath();fctx.moveTo(cx+rw/2-corner,cy-rh/2-gap);fctx.lineTo(cx+rw/2+gap,cy-rh/2-gap);fctx.lineTo(cx+rw/2+gap,cy-rh/2+corner);fctx.stroke();
+ fctx.beginPath();fctx.moveTo(cx-rw/2-gap,cy+rh/2-corner);fctx.lineTo(cx-rw/2-gap,cy+rh/2+gap);fctx.lineTo(cx-rw/2+corner,cy+rh/2+gap);fctx.stroke();
+ fctx.beginPath();fctx.moveTo(cx+rw/2-corner,cy+rh/2+gap);fctx.lineTo(cx+rw/2+gap,cy+rh/2+gap);fctx.lineTo(cx+rw/2+gap,cy+rh/2-corner);fctx.stroke();fctx.restore();
+ var pulse=1+Math.sin(t*3)*0.12;
+ fctx.save();fctx.beginPath();fctx.arc(cx,cy,3.2*pulse,0,Math.PI*2);fctx.fillStyle='rgba(94,231,255,0.9)';fctx.shadowColor='#5ee7ff';fctx.shadowBlur=12;fctx.fill();
+ fctx.beginPath();fctx.arc(cx,cy,(10+Math.sin(t*3)*4),0,Math.PI*2);fctx.strokeStyle='rgba(94,231,255,'+(0.5-Math.sin(t*3)*0.2)+')';fctx.lineWidth=1;fctx.stroke();fctx.restore();
 }
 function drawPortalQuad(pts){
  if(portalAuto&&Date.now()-lastPortalChange>3600){portalPalette=(portalPalette+1)%portalPalettes.length;lastPortalChange=Date.now();var colorBtn=document.getElementById('portalColorBtn');if(colorBtn)colorBtn.textContent='WARNA: '+portalPalettes[portalPalette].name}
@@ -274,7 +286,6 @@ function drawPortalQuad(pts){
  shapePath(fctx,portalShape,cx,cy,w*.94,h*.94);fctx.clip();
  var grad=fctx.createLinearGradient(cx-w*.5,cy-h*.5,cx+w*.5,cy+h*.5);grad.addColorStop(0,palette.a);grad.addColorStop(.52,palette.b);grad.addColorStop(1,palette.c);
  fctx.globalAlpha=.52;fctx.fillStyle=grad;fctx.fillRect(cx-w,cy-h,w*2,h*2);
- // FIX PORTAL: dulu drawImage(video) mentah -> kebalik. Sekarang pake drawVideoCover yang udah mirror + cover, jadi dalem portal sama persis kaya luar.
  fctx.save();fctx.globalAlpha=.42;fctx.filter='saturate(1.8) contrast(1.12)';drawVideoCover(fctx,W,H);fctx.restore();
  fctx.globalAlpha=.35;for(var k=0;k<22;k++){var yy=cy-h*.5+((k/22*h+t*36)%h);fctx.fillStyle=k%2?'#ffffff':'#06111d';fctx.fillRect(cx-w*.6,yy,w*1.2,1.2)}
  fctx.save();fctx.translate(cx,cy);fctx.rotate(t*.28);fctx.globalAlpha=.48;for(var r=0;r<5;r++){fctx.beginPath();fctx.ellipse(0,0,w*(.13+r*.085),h*(.13+r*.085),0,0,Math.PI*2);fctx.strokeStyle=r%2?palette.c:palette.a;fctx.lineWidth=1.4+r*.25;fctx.shadowColor=fctx.strokeStyle;fctx.shadowBlur=13;fctx.stroke()}fctx.restore();
@@ -317,14 +328,13 @@ var photoBtn=document.getElementById('photoBtn');var videoBtn=document.getElemen
 function chooseRecordingMime(){if(!window.MediaRecorder)return '';var types=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(var i=0;i<types.length;i++){try{if(MediaRecorder.isTypeSupported(types[i]))return types[i]}catch(e){}}return ''}
 function recordingExtension(type){return (type&&type.toLowerCase().indexOf('mp4')!==-1)?'mp4':'webm'}
 function showRecordingResult(blob,filename){if(lastRecordingUrl){URL.revokeObjectURL(lastRecordingUrl);lastRecordingUrl=null}lastRecordingUrl=URL.createObjectURL(blob);var old=document.getElementById('recordResult');if(old)old.remove();var panel=document.createElement('div');panel.id='recordResult';panel.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:18px;font-family:system-ui,-apple-system,sans-serif;color:#fff;';panel.innerHTML='<div style="width:min(100%,520px);background:#11131b;border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:16px;box-shadow:0 20px 80px #000;">'+'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;"><strong style="font-size:16px;">VIDEO BERHASIL DIREKAM</strong><button id="closeRecordResult" style="border:0;border-radius:50%;width:34px;height:34px;background:#292d39;color:white;font-size:20px;">×</button></div>'+'<video id="recordPreview" controls playsinline style="display:block;width:100%;max-height:55vh;background:#000;border-radius:14px;"></video>'+'<div style="font-size:12px;color:#b9c0d0;margin:10px 2px 14px;word-break:break-all;">'+filename+' · '+(blob.size/1048576).toFixed(2)+' MB</div>'+'<button id="shareRecord" style="width:100%;padding:13px;border:0;border-radius:13px;background:linear-gradient(100deg,#16b8d4,#7864ff);color:#fff;font-weight:800;font-size:14px;margin-bottom:8px;">BAGIKAN / SIMPAN KE FOTO</button>'+'<button id="downloadRecord" style="width:100%;padding:13px;border:1px solid #51586a;border-radius:13px;background:#222633;color:#fff;font-weight:800;font-size:14px;">UNDUH VIDEO</button>'+'<p style="font-size:11px;line-height:1.5;color:#9ca3af;margin:12px 2px 0;">Di iPhone, tekan Bagikan lalu pilih “Simpan Video” atau “Simpan ke File”.</p></div>';document.body.appendChild(panel);var preview=document.getElementById('recordPreview');preview.src=lastRecordingUrl;document.getElementById('closeRecordResult').onclick=function(){preview.pause();panel.remove();if(lastRecordingUrl){URL.revokeObjectURL(lastRecordingUrl);lastRecordingUrl=null}};document.getElementById('shareRecord').onclick=async function(){try{var file=new File([blob],filename,{type:blob.type||(filename.endsWith('.mp4')?'video/mp4':'video/webm')});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'TAMA NEO CAMERA'})}else{alert('Fitur berbagi file tidak didukung browser ini. Coba tombol UNDUH VIDEO.')}}catch(e){if(e.name!=='AbortError')alert('Tidak dapat membuka menu berbagi: '+e.message)}};document.getElementById('downloadRecord').onclick=function(){var a=document.createElement('a');a.href=lastRecordingUrl;a.download=filename;a.style.display='none';document.body.appendChild(a);a.click();a.remove()}}
-// ===== FIX FOTO =====
 photoBtn.onclick=function(){
  var flash=document.getElementById('flash');flash.style.opacity='0.7';setTimeout(function(){flash.style.opacity='0'},120);
  var c=document.createElement('canvas');c.width=W;c.height=H;var ctx=c.getContext('2d');
- drawVideoCover(ctx,W,H); // dulu: ctx.drawImage(video,0,0,W,H) -> kebalik + gepeng
+ drawVideoCover(ctx,W,H);
  ctx.drawImage(draw,0,0,W,H);
  ctx.drawImage(fx,0,0,W,H);
- var a=document.createElement('a');a.download='tama-video.mp4'.replace('.mp4','.png');a.download='tama-'+Date.now()+'.png';a.href=c.toDataURL('image/png');a.click();
+ var a=document.createElement('a');a.download='tama-'+Date.now()+'.png';a.href=c.toDataURL('image/png');a.click();
 };
 videoBtn.onclick=function(){
  if(!isRec){
