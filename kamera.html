@@ -185,8 +185,15 @@ var lastDraw={left:null,right:null};var smoothDraw={left:null,right:null};var sm
 var fpsFrames=0;var fpsTime=Date.now();var frameCount=0;var lastHandTime=0;var lastPortalChange=Date.now();
 var loopStarted=false;var smoothPortal={tl:null,tr:null,bl:null,br:null};var isFakeFull=false;
 var noiseCanvas=document.createElement('canvas');noiseCanvas.width=260;noiseCanvas.height=260;var noiseCtx=noiseCanvas.getContext('2d');
-function mx(nx){return (1-nx)*W}
-function my(ny){return ny*H}
+// === FIX MAPPING COVER - INI BIANG MELESETNYA ===
+function coverGeom(){
+ var vw=video.videoWidth||W, vh=video.videoHeight||H;
+ var sc=Math.max(W/vw,H/vh);
+ var dw=vw*sc, dh=vh*sc;
+ return {vw:vw,vh:vh,sc:sc,dw:dw,dh:dh,dx:(W-dw)/2,dy:(H-dh)/2};
+}
+function mx(nx){var g=coverGeom();return g.dx+(1-nx)*g.dw}
+function my(ny){var g=coverGeom();return g.dy+ny*g.dh}
 function lerp(a,b,t){return a+(b-a)*t}
 function smoothPt(key,x,y){if(!smoothPortal[key]){smoothPortal[key]={x:x,y:y};return {x:x,y:y}}smoothPortal[key].x=lerp(smoothPortal[key].x,x,0.5);smoothPortal[key].y=lerp(smoothPortal[key].y,y,0.5);return {x:smoothPortal[key].x,y:smoothPortal[key].y}}
 function smoothHand(k,x,y){if(!smoothPos[k]){smoothPos[k]={x:x,y:y};return {x:x,y:y}}smoothPos[k].x=lerp(smoothPos[k].x,x,0.6);smoothPos[k].y=lerp(smoothPos[k].y,y,0.6);return {x:smoothPos[k].x,y:smoothPos[k].y}}
@@ -221,7 +228,7 @@ if(name==='portal'){subTitleTxt.textContent='🌀 PORTAL - AUTO EFEK';document.g
 if(name==='api'){subTitleTxt.textContent='🔥 API - TENGAH TELAPAK';document.getElementById('modeTxt').textContent='Api';document.getElementById('hintTxt').textContent='✋ Api PAS di tengah telapak tangan lu';subContent.innerHTML='<div class="row"><button class="btn active" data-fire="asli">🔥 REAL FIRE</button><button class="btn" data-fire="biru">💙 BLUE</button><button class="btn" data-fire="ungu">💜 VIOLET</button><button class="btn" data-fire="hijau">💚 GREEN</button></div><div class="row" style="margin-top:6px"><button class="btn" data-size="0.7">Kecil</button><button class="btn active" data-size="1">Sedang</button><button class="btn" data-size="1.6">Besar</button></div><div style="font-size:11px;opacity:.76;margin-top:5px">Api muncul di kedua telapak saat tangan terbuka dan padam saat tangan mengepal.</div>';addFeatureSwitch('fire','API DUA TELAPAK');var fb=subContent.querySelectorAll('[data-fire]');for(var a=0;a<fb.length;a++){fb[a].onclick=(function(b){return function(){var f=subContent.querySelectorAll('[data-fire]');for(var k=0;k<f.length;k++)f[k].classList.remove('active');b.classList.add('active');fireMode=b.getAttribute('data-fire')}})(fb[a])}var sb=subContent.querySelectorAll('[data-size]');for(var b=0;b<sb.length;b++){sb[b].onclick=(function(btn){return function(){var s=subContent.querySelectorAll('[data-size]');for(var k=0;k<s.length;k++)s[k].classList.remove('active');btn.classList.add('active');fireSize=parseFloat(btn.getAttribute('data-size'))}})(sb[b])}}
 if(name==='glow'){subTitleTxt.textContent='💸 GLOW - DUIT + ESTETIK';document.getElementById('modeTxt').textContent='Glow Duit';document.getElementById('hintTxt').textContent='👆 Telunjuk = Duit + Glow keluar, estetik!';subContent.innerHTML='<div class="row"><button class="btn active" data-glow="duit">💸 Duit + Emas</button><button class="btn" data-glow="pink">🩷 Pink Estetik</button><button class="btn" data-glow="cyan">🔵 Cyan Glow</button><button class="btn" data-glow="ungu">🟣 Ungu Glow</button></div><div style="font-size:11px;opacity:.7;margin-top:6px">Mode Duit: ada lembaran duit 💵 jatuh + sparkle emas. Mode lain: glow halus + bintang.</div>';addFeatureSwitch('glow','GLOW + PARTIKEL');var gb=subContent.querySelectorAll('[data-glow]');for(var g=0;g<gb.length;g++){gb[g].onclick=(function(btn){return function(){var gg=subContent.querySelectorAll('[data-glow]');for(var k=0;k<gg.length;k++)gg[k].classList.remove('active');btn.classList.add('active');glowMode=btn.getAttribute('data-glow')}})(gb[g])}}
 if(name==='draw'){subTitleTxt.textContent='✍️ GAMBAR - HALUS';document.getElementById('modeTxt').textContent='Gambar';document.getElementById('hintTxt').textContent='👆 Telunjuk = Gambar halus, gak goyang';subContent.innerHTML='<div class="row"><button class="btn active" data-draw="#a855f7">🟣 Ungu</button><button class="btn" data-draw="#ec4899">🩷 Pink</button><button class="btn" data-draw="#22d3ee">🔵 Cyan</button><button class="btn" data-draw="#facc15">🟡 Kuning</button><button class="btn" data-draw="#ffffff">⚪ Putih</button></div><div class="row" style="margin-top:6px"><button class="btn active" data-thick="7">Tipis</button><button class="btn" data-thick="12">Tebal</button><button class="btn" data-thick="18">GEDE</button><button class="btn" id="undoBtn2">↩ Undo</button><button class="btn" id="clearBtn2" style="background:#ef4444">🗑 Hapus</button></div>';addFeatureSwitch('draw','AIR DRAWING');var db=subContent.querySelectorAll('[data-draw]');for(var d=0;d<db.length;d++){db[d].onclick=(function(btn){return function(){var dd=subContent.querySelectorAll('[data-draw]');for(var k=0;k<dd.length;k++)dd[k].classList.remove('active');btn.classList.add('active');drawColor=btn.getAttribute('data-draw')}})(db[d])}var tb=subContent.querySelectorAll('[data-thick]');for(var t=0;t<tb.length;t++){tb[t].onclick=(function(btn){return function(){var tt=subContent.querySelectorAll('[data-thick]');for(var k=0;k<tt.length;k++)tt[k].classList.remove('active');btn.classList.add('active');drawSize=parseFloat(btn.getAttribute('data-thick'))}})(tb[t])}document.getElementById('undoBtn2').onclick=function(){if(history.length>0)dctx.putImageData(history.pop(),0,0)};document.getElementById('clearBtn2').onclick=function(){try{history.push(dctx.getImageData(0,0,W,H))}catch(e){}dctx.clearRect(0,0,W,H);lastDraw={left:null,right:null};smoothDraw={left:null,right:null}}}
-if(name==='sensor'){subTitleTxt.textContent='📺 SENSOR - BLUR + KONSLET';document.getElementById('modeTxt').textContent='Sensor';document.getElementById('hintTxt').textContent='📺 Blur band kuat + glitch konslet, nempel presisi di muka lu';subContent.innerHTML='<div style="font-size:11px;opacity:.76;margin-top:6px;line-height:1.5">Blur band super kuat + efek konslet nempel presisi di wajah, gerak kanan ikut kanan.</div>';addFeatureSwitch('sensor','FACE SENSOR BLUR + KONSLET');sensorOn=effectsOn.sensor}
+if(name==='sensor'){subTitleTxt.textContent='📺 SENSOR - BLUR + KONSLET';document.getElementById('modeTxt').textContent='Sensor';document.getElementById('hintTxt').textContent='📺 Blur full muka + glitch konslet, nempel presisi';subContent.innerHTML='<div style="font-size:11px;opacity:.76;margin-top:6px;line-height:1.5">Blur full wajah horizontal + efek konslet mengikuti wajah secara real-time, kaya referensi.</div>';addFeatureSwitch('sensor','FACE SENSOR BLUR + KONSLET');sensorOn=effectsOn.sensor}
 }
 var menuBtns=document.querySelectorAll('.mbtn');
 for(var m=0;m<menuBtns.length;m++){menuBtns[m].onclick=(function(btn){return function(){if(currentMenu===btn.getAttribute('data-menu'))closeMenu();else openMenu(btn.getAttribute('data-menu'))}})(menuBtns[m])}
@@ -244,30 +251,19 @@ function drawSensor(){
  if(!effectsOn.sensor||!sensorOn)return;
  var cur=face||lastFace;
  if(!cur)return;
- // SIMPAN FACE MENTAH, GAK PAKE PREDIKSI faceVel LAGI - BIAR GAK NGAWUR / KEBALIK
- if(face){
-  lastFace={x:face.x,y:face.y,w:face.w,h:face.h};
- }else{
-  cur={x:lastFace.x,y:lastFace.y,w:lastFace.w,h:lastFace.h};
-  lastFace=cur;
- }
- if(!smoothFace){
-  smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h};
- }
- // SMOOTH CEPET .85 BIAR NEMPEL, GAK KETINGGALAN
+ if(face){ lastFace={x:face.x,y:face.y,w:face.w,h:face.h}; }else{ cur={x:lastFace.x,y:lastFace.y,w:lastFace.w,h:lastFace.h}; lastFace=cur; }
+ if(!smoothFace){ smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h}; }
  smoothFace.x=lerp(smoothFace.x,cur.x,.85);
  smoothFace.y=lerp(smoothFace.y,cur.y,.85);
  smoothFace.w=lerp(smoothFace.w,cur.w,.85);
  smoothFace.h=lerp(smoothFace.h,cur.h,.85);
  var s=smoothFace;
- // TANPA faceVel - GERAK KANAN = KANAN, GERAK KIRI = KIRI, 1:1
  var cx=s.x;
  var cy=s.y;
- // UKURAN DIPRESISIKAN - PAS DI MUKA, GAK KELEBARAN
- var rw=Math.max(150,s.w*1.18);
- var rh=Math.max(60,s.h*.40);
- // BAND PAS DI MATA-HIDUNG
- var bandY=cy - s.h*.12;
+ // FULL MUKA KAYA REFERENSI - BUKAN CUMA BAND TIPIS LAGI
+ var rw=Math.max(170,s.w*1.25);
+ var rh=Math.max(190,s.h*1.15);
+ var bandY=cy;
  var x=cx-rw/2;
  var y=bandY-rh/2;
  if(!window._sensorBand) window._sensorBand=document.createElement('canvas');
@@ -298,42 +294,40 @@ function drawSensor(){
  src.height=bc.height;
  var sctx=src.getContext('2d');
  sctx.clearRect(0,0,src.width,src.height);
- try{
-  sctx.drawImage(video,sx,sy,cropW,cropH,0,0,src.width,src.height);
- }catch(e){ return; }
- // === BLUR SUPER KUAT - PIXELATE DULU BIAR MUKA HANCUR TOTAL ===
+ try{ sctx.drawImage(video,sx,sy,cropW,cropH,0,0,src.width,src.height); }catch(e){ return; }
+ // BLUR KUAT KAYA REFERENSI - SMEAR HORIZONTAL
  bctx.clearRect(0,0,bc.width,bc.height);
  bctx.imageSmoothingEnabled=true;
  bctx.imageSmoothingQuality='high';
- // 1. PIXELATE: kecilin jadi 14px terus gedein lagi - muka langsung jadi kotak-kotak gak jelas
+ // 1. Pixelate dulu biar detail muka hancur
  if(!window._sensorTiny) window._sensorTiny=document.createElement('canvas');
  var tiny=window._sensorTiny;
- tiny.width=14; tiny.height=8;
+ tiny.width=16; tiny.height=16;
  var tctx=tiny.getContext('2d');
  tctx.imageSmoothingEnabled=false;
- tctx.clearRect(0,0,14,8);
- tctx.drawImage(src,0,0,14,8);
+ tctx.clearRect(0,0,16,16);
+ tctx.drawImage(src,0,0,16,16);
  bctx.imageSmoothingEnabled=false;
  bctx.drawImage(tiny,0,0,bc.width,bc.height);
  bctx.imageSmoothingEnabled=true;
- // 2. SMEAR HORIZONTAL LEBIH BANYAK + LEBIH LEBAR
+ // 2. Smear horizontal - ini yang bikin kaya foto sweater abu-abu
  bctx.save();
- bctx.globalAlpha=.18;
+ bctx.globalAlpha=.20;
  for(var i=-15;i<=15;i++){
-  bctx.drawImage(src,i*4.5,0,bc.width,bc.height);
+  bctx.drawImage(src,i*5,0,bc.width,bc.height);
  }
  bctx.restore();
- // 3. BLUR KENCENG 10px (tadi cuma 3px)
+ // 3. Blur kenceng
  bctx.save();
- bctx.globalAlpha=.9;
- bctx.filter='blur(10px)';
+ bctx.globalAlpha=.85;
+ bctx.filter='blur(12px)';
  bctx.drawImage(src,0,0,bc.width,bc.height);
  bctx.restore();
  bctx.filter='none';
- // 4. OVERLAY ABU-ABU GELAP BIAR WARNA KULIT / MATA GAK TEMBUS LAGI
- bctx.fillStyle='rgba(28,30,36,0.42)';
+ // 4. Overlay tipis biar warna kulit gak tembus, tapi tetep kaya foto referensi (bukan hitam pekat)
+ bctx.fillStyle='rgba(28,30,36,0.32)';
  bctx.fillRect(0,0,bc.width,bc.height);
- // Glitch - SAMA PERSIS KAYA PUNYA LU YANG UDAH BAGUS
+ // Glitch - SAMA KAYA PUNYA LU YANG UDAH BAGUS
  var glitch=Math.random()<.16;
  if(glitch){
   for(var g=0;g<3;g++){
@@ -362,7 +356,7 @@ function drawSensor(){
    bctx.fillRect(Math.random()*bc.width*.3,Math.random()*bc.height,bc.width*(.3+Math.random()*.5),1);
   }
  }
- // Mask persegi panjang dengan tepian lembut - SAMA KAYA PUNYA LU
+ // Mask lembut - atas bawah + kiri kanan feather, biar nyatu kaya referensi, gak kotak tajem
  if(!window._sensorBandMask) window._sensorBandMask=document.createElement('canvas');
  var mc=window._sensorBandMask;
  mc.width=bc.width;
@@ -371,17 +365,17 @@ function drawSensor(){
  mctx.clearRect(0,0,mc.width,mc.height);
  var grad=mctx.createLinearGradient(0,0,0,mc.height);
  grad.addColorStop(0,'rgba(255,255,255,0)');
- grad.addColorStop(.12,'rgba(255,255,255,.75)');
- grad.addColorStop(.28,'rgba(255,255,255,1)');
- grad.addColorStop(.78,'rgba(255,255,255,1)');
- grad.addColorStop(.94,'rgba(255,255,255,.65)');
+ grad.addColorStop(.10,'rgba(255,255,255,.80)');
+ grad.addColorStop(.25,'rgba(255,255,255,1)');
+ grad.addColorStop(.80,'rgba(255,255,255,1)');
+ grad.addColorStop(.92,'rgba(255,255,255,.70)');
  grad.addColorStop(1,'rgba(255,255,255,0)');
  mctx.fillStyle=grad;
  mctx.fillRect(0,0,mc.width,mc.height);
  var edge=mctx.createLinearGradient(0,0,mc.width,0);
  edge.addColorStop(0,'rgba(255,255,255,0)');
- edge.addColorStop(.06,'rgba(255,255,255,1)');
- edge.addColorStop(.94,'rgba(255,255,255,1)');
+ edge.addColorStop(.07,'rgba(255,255,255,1)');
+ edge.addColorStop(.93,'rgba(255,255,255,1)');
  edge.addColorStop(1,'rgba(255,255,255,0)');
  mctx.globalCompositeOperation='destination-in';
  mctx.fillStyle=edge;
@@ -438,7 +432,7 @@ requestAnimationFrame(loop);
 function resize(){W=window.innerWidth;H=window.innerHeight;fx.width=W;fx.height=H;draw.width=W;draw.height=H}
 resize();window.addEventListener('resize',resize);
 var hands=new Hands({locateFile:function(f){return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/'+f}});hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:0.55,minTrackingConfidence:0.5});hands.onResults(function(r){if(r.multiHandLandmarks&&r.multiHandLandmarks.length){handsData=r.multiHandLandmarks.map(function(l){return {landmarks:l}});lastHandTime=Date.now()}else{if(Date.now()-lastHandTime>400)handsData=[]}});
-var faceMesh=new FaceMesh({locateFile:function(f){return 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f}});faceMesh.setOptions({maxNumFaces:1,refineLandmarks:false,minDetectionConfidence:0.55,minTrackingConfidence:0.5});faceMesh.onResults(function(r){if(r.multiFaceLandmarks&&r.multiFaceLandmarks[0]){var lm=r.multiFaceLandmarks[0];var xs=lm.map(function(p){return p.x});var ys=lm.map(function(p){return p.y});var minX=Math.min.apply(null,xs);var maxX=Math.max.apply(null,xs);var minY=Math.min.apply(null,ys);var maxY=Math.max.apply(null,ys);face={x:mx((minX+maxX)/2),y:(minY+maxY)/2*H,w:(maxX-minX)*W,h:(maxY-minY)*H}}else{face=null}});
+var faceMesh=new FaceMesh({locateFile:function(f){return 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f}});faceMesh.setOptions({maxNumFaces:1,refineLandmarks:false,minDetectionConfidence:0.55,minTrackingConfidence:0.5});faceMesh.onResults(function(r){if(r.multiFaceLandmarks&&r.multiFaceLandmarks[0]){var lm=r.multiFaceLandmarks[0];var xs=lm.map(function(p){return p.x});var ys=lm.map(function(p){return p.y});var minX=Math.min.apply(null,xs);var maxX=Math.max.apply(null,xs);var minY=Math.min.apply(null,ys);var maxY=Math.max.apply(null,ys);var g=coverGeom();face={x:mx((minX+maxX)/2),y:my((minY+maxY)/2),w:(maxX-minX)*g.dw,h:(maxY-minY)*g.dh}}else{face=null}});
 var isWA=navigator.userAgent.includes('WhatsApp')||navigator.userAgent.includes('FBAN')||navigator.userAgent.includes('FBAV');if(isWA)document.getElementById('waWarn').style.display='block';
 function enterFull(){var el=document.documentElement;var p=null;try{if(el.requestFullscreen)p=el.requestFullscreen();else if(el.webkitRequestFullscreen)p=el.webkitRequestFullscreen();else if(el.mozRequestFullScreen)p=el.mozRequestFullScreen();else if(el.msRequestFullscreen)p=el.msRequestFullscreen()}catch(e){}if(p&&p.catch){p.catch(function(){enterFakeFull()})}setTimeout(function(){if(!document.fullscreenElement&&!document.webkitFullscreenElement){enterFakeFull()}},600)}
 function enterFakeFull(){isFakeFull=true;document.body.classList.add('fake-full');document.getElementById('fullBtn').textContent='⛶ KELUAR';try{window.scrollTo(0,0)}catch(e){}setTimeout(resize,100)}
