@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid var(--neo);outline-offset:3px}
 <div class="mbtn" data-menu="api">🔥<br>API<small>Tengah Telapak</small></div>
 <div class="mbtn" data-menu="glow">💸<br>GLOW<small>Duit + Estetik</small></div>
 <div class="mbtn" data-menu="draw">✍️<br>GAMBAR<small>Halus</small></div>
-<div class="mbtn" data-menu="sensor">📺<br>SENSOR<small>Ikut Muka</small></div>
+<div class="mbtn" data-menu="sensor">📺<br>SENSOR<small>Blur + Konslet</small></div>
 </div>
 </div>
 <button id="exitFull">✕ Keluar FULL</button>
@@ -221,7 +221,7 @@ if(name==='portal'){subTitleTxt.textContent='🌀 PORTAL - AUTO EFEK';document.g
 if(name==='api'){subTitleTxt.textContent='🔥 API - TENGAH TELAPAK';document.getElementById('modeTxt').textContent='Api';document.getElementById('hintTxt').textContent='✋ Api PAS di tengah telapak tangan lu';subContent.innerHTML='<div class="row"><button class="btn active" data-fire="asli">🔥 REAL FIRE</button><button class="btn" data-fire="biru">💙 BLUE</button><button class="btn" data-fire="ungu">💜 VIOLET</button><button class="btn" data-fire="hijau">💚 GREEN</button></div><div class="row" style="margin-top:6px"><button class="btn" data-size="0.7">Kecil</button><button class="btn active" data-size="1">Sedang</button><button class="btn" data-size="1.6">Besar</button></div><div style="font-size:11px;opacity:.76;margin-top:5px">Api muncul di kedua telapak saat tangan terbuka dan padam saat tangan mengepal.</div>';addFeatureSwitch('fire','API DUA TELAPAK');var fb=subContent.querySelectorAll('[data-fire]');for(var a=0;a<fb.length;a++){fb[a].onclick=(function(b){return function(){var f=subContent.querySelectorAll('[data-fire]');for(var k=0;k<f.length;k++)f[k].classList.remove('active');b.classList.add('active');fireMode=b.getAttribute('data-fire')}})(fb[a])}var sb=subContent.querySelectorAll('[data-size]');for(var b=0;b<sb.length;b++){sb[b].onclick=(function(btn){return function(){var s=subContent.querySelectorAll('[data-size]');for(var k=0;k<s.length;k++)s[k].classList.remove('active');btn.classList.add('active');fireSize=parseFloat(btn.getAttribute('data-size'))}})(sb[b])}}
 if(name==='glow'){subTitleTxt.textContent='💸 GLOW - DUIT + ESTETIK';document.getElementById('modeTxt').textContent='Glow Duit';document.getElementById('hintTxt').textContent='👆 Telunjuk = Duit + Glow keluar, estetik!';subContent.innerHTML='<div class="row"><button class="btn active" data-glow="duit">💸 Duit + Emas</button><button class="btn" data-glow="pink">🩷 Pink Estetik</button><button class="btn" data-glow="cyan">🔵 Cyan Glow</button><button class="btn" data-glow="ungu">🟣 Ungu Glow</button></div><div style="font-size:11px;opacity:.7;margin-top:6px">Mode Duit: ada lembaran duit 💵 jatuh + sparkle emas. Mode lain: glow halus + bintang.</div>';addFeatureSwitch('glow','GLOW + PARTIKEL');var gb=subContent.querySelectorAll('[data-glow]');for(var g=0;g<gb.length;g++){gb[g].onclick=(function(btn){return function(){var gg=subContent.querySelectorAll('[data-glow]');for(var k=0;k<gg.length;k++)gg[k].classList.remove('active');btn.classList.add('active');glowMode=btn.getAttribute('data-glow')}})(gb[g])}}
 if(name==='draw'){subTitleTxt.textContent='✍️ GAMBAR - HALUS';document.getElementById('modeTxt').textContent='Gambar';document.getElementById('hintTxt').textContent='👆 Telunjuk = Gambar halus, gak goyang';subContent.innerHTML='<div class="row"><button class="btn active" data-draw="#a855f7">🟣 Ungu</button><button class="btn" data-draw="#ec4899">🩷 Pink</button><button class="btn" data-draw="#22d3ee">🔵 Cyan</button><button class="btn" data-draw="#facc15">🟡 Kuning</button><button class="btn" data-draw="#ffffff">⚪ Putih</button></div><div class="row" style="margin-top:6px"><button class="btn active" data-thick="7">Tipis</button><button class="btn" data-thick="12">Tebal</button><button class="btn" data-thick="18">GEDE</button><button class="btn" id="undoBtn2">↩ Undo</button><button class="btn" id="clearBtn2" style="background:#ef4444">🗑 Hapus</button></div>';addFeatureSwitch('draw','AIR DRAWING');var db=subContent.querySelectorAll('[data-draw]');for(var d=0;d<db.length;d++){db[d].onclick=(function(btn){return function(){var dd=subContent.querySelectorAll('[data-draw]');for(var k=0;k<dd.length;k++)dd[k].classList.remove('active');btn.classList.add('active');drawColor=btn.getAttribute('data-draw')}})(db[d])}var tb=subContent.querySelectorAll('[data-thick]');for(var t=0;t<tb.length;t++){tb[t].onclick=(function(btn){return function(){var tt=subContent.querySelectorAll('[data-thick]');for(var k=0;k<tt.length;k++)tt[k].classList.remove('active');btn.classList.add('active');drawSize=parseFloat(btn.getAttribute('data-thick'))}})(tb[t])}document.getElementById('undoBtn2').onclick=function(){if(history.length>0)dctx.putImageData(history.pop(),0,0)};document.getElementById('clearBtn2').onclick=function(){try{history.push(dctx.getImageData(0,0,W,H))}catch(e){}dctx.clearRect(0,0,W,H);lastDraw={left:null,right:null};smoothDraw={left:null,right:null}}}
-if(name==='sensor'){subTitleTxt.textContent='📺 SENSOR - IKUT MUKA';document.getElementById('modeTxt').textContent='Sensor';document.getElementById('hintTxt').textContent='📺 Sensor bulet nutupin muka lu aja';subContent.innerHTML='<div style="font-size:11px;opacity:.76;margin-top:6px;line-height:1.5">Face sensor blur estetik mengikuti wajah secara real-time.</div>';addFeatureSwitch('sensor','FACE SENSOR BLUR');sensorOn=effectsOn.sensor}
+if(name==='sensor'){subTitleTxt.textContent='📺 SENSOR - BLUR + KONSLET';document.getElementById('modeTxt').textContent='Sensor';document.getElementById('hintTxt').textContent='📺 Blur halus + glitch konslet, ngikutin muka lu';subContent.innerHTML='<div style="font-size:11px;opacity:.76;margin-top:6px;line-height:1.5">Blur motion + efek konslet mengikuti wajah secara real-time.</div>';addFeatureSwitch('sensor','FACE SENSOR BLUR + KONSLET');sensorOn=effectsOn.sensor}
 }
 var menuBtns=document.querySelectorAll('.mbtn');
 for(var m=0;m<menuBtns.length;m++){menuBtns[m].onclick=(function(btn){return function(){if(currentMenu===btn.getAttribute('data-menu'))closeMenu();else openMenu(btn.getAttribute('data-menu'))}})(menuBtns[m])}
@@ -243,33 +243,29 @@ makeNoise();
 function drawSensor(){
  if(!effectsOn.sensor||!sensorOn)return;
  var cur=face||lastFace;if(!cur)return;
- if(face){if(lastFace){faceVel.x=lerp(faceVel.x,face.x-lastFace.x,.24);faceVel.y=lerp(faceVel.y,face.y-lastFace.y,.24)}lastFace={x:face.x,y:face.y,w:face.w,h:face.h}}else{cur={x:lastFace.x+faceVel.x*1.5,y:lastFace.y+faceVel.y*1.5,w:lastFace.w,h:lastFace.h};lastFace=cur}
+ if(face){if(lastFace){faceVel.x=lerp(faceVel.x,face.x-lastFace.x,.3);faceVel.y=lerp(faceVel.y,face.y-lastFace.y,.3)}lastFace={x:face.x,y:face.y,w:face.w,h:face.h};}else{cur={x:lastFace.x+faceVel.x*2,y:lastFace.y+faceVel.y*2,w:lastFace.w,h:lastFace.h};lastFace=cur;}
  if(!smoothFace)smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h};
- smoothFace.x=lerp(smoothFace.x,cur.x,.42);smoothFace.y=lerp(smoothFace.y,cur.y,.42);smoothFace.w=lerp(smoothFace.w,cur.w,.38);smoothFace.h=lerp(smoothFace.h,cur.h,.38);
- var s=smoothFace,cx=s.x,cy=s.y,t=Date.now()*0.001;
- var rw=Math.max(135,s.w*1.58);var rh=Math.max(170,s.h*1.82);var x=cx-rw/2,y=cy-rh/2;
+ smoothFace.x=lerp(smoothFace.x,cur.x,.62);smoothFace.y=lerp(smoothFace.y,cur.y,.62);smoothFace.w=lerp(smoothFace.w,cur.w,.5);smoothFace.h=lerp(smoothFace.h,cur.h,.5);
+ var s=smoothFace;var cx=s.x+faceVel.x*12;var cy=s.y+faceVel.y*12;var t=Date.now()*0.001;
+ var rw=Math.max(140,s.w*1.38);var rh=Math.max(175,s.h*1.58);var x=cx-rw/2,y=cy-rh/2;
+ if(!window._blurSmall) window._blurSmall=document.createElement('canvas');
+ var small=window._blurSmall;small.width=32;small.height=40;var sctx=small.getContext('2d');
+ var vw=video.videoWidth||W, vh=video.videoHeight||H;
+ if(vw&&vh){var scale=Math.max(W/vw,H/vh);var dw=vw*scale, dh=vh*scale;var dx=(W-dw)/2, dy=(H-dh)/2;var vx=(cx-dx)/scale, vy=(cy-dy)/scale;var vwFace=(rw/scale), vhFace=(rh/scale);var sxVideo=vw - vx - vwFace/2;var syVideo=vy - vhFace/2;try{sctx.clearRect(0,0,32,40);sctx.drawImage(video, sxVideo, syVideo, vwFace, vhFace, 0, 0, 32, 40);}catch(e){}}
  fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.clip();
- fctx.filter='blur(22px) brightness(0.92) saturate(0.8)';drawVideoCover(fctx,W,H);fctx.filter='none';
- fctx.fillStyle='rgba(8,18,32,0.22)';fctx.fillRect(x,y,rw,rh);
- var glassGrad=fctx.createLinearGradient(0,y,0,y+rh);glassGrad.addColorStop(0,'rgba(255,255,255,0.14)');glassGrad.addColorStop(0.35,'rgba(255,255,255,0.02)');glassGrad.addColorStop(1,'rgba(0,0,0,0.18)');fctx.fillStyle=glassGrad;fctx.fillRect(x,y,rw,rh);fctx.restore();
- fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.clip();
- var scanY=y+((Math.sin(t*1.4)*0.5+0.5)*rh);
- var scanGrad=fctx.createLinearGradient(0,scanY-14,0,scanY+14);scanGrad.addColorStop(0,'rgba(94,231,255,0)');scanGrad.addColorStop(0.5,'rgba(94,231,255,0.35)');scanGrad.addColorStop(1,'rgba(155,123,255,0)');fctx.fillStyle=scanGrad;fctx.fillRect(x,scanY-14,rw,28);
- fctx.fillStyle='rgba(220,250,255,0.55)';fctx.fillRect(x,scanY-0.8,rw,1.6);
- for(var d=0;d<22;d++){var dx=x+Math.random()*rw;var dy=y+Math.random()*rh;var nx=(dx-cx)/(rw/2),ny=(dy-cy)/(rh/2);if(nx*nx+ny*ny>1)continue;fctx.fillStyle='rgba(255,255,255,'+(0.15+Math.random()*0.25)+')';fctx.beginPath();fctx.arc(dx,dy,0.8+Math.random()*1.1,0,Math.PI*2);fctx.fill()}
+ fctx.imageSmoothingEnabled=true;fctx.imageSmoothingQuality='high';
+ for(var i=-4;i<=4;i++){fctx.globalAlpha=0.22;var offsetX=i*7;fctx.drawImage(small, x+offsetX, y, rw, rh);}
+ fctx.globalAlpha=0.5;fctx.drawImage(small, x, y, rw, rh);fctx.globalAlpha=1;fctx.fillStyle='rgba(20,22,28,0.18)';fctx.fillRect(x,y,rw,rh);
+ var glitchPower=0;var glitchCycle=(Date.now()%800)/800;if(glitchCycle<0.18)glitchPower=1;if(Math.random()<0.08)glitchPower=0.6;
+ if(glitchPower>0){
+  var sliceCount=3+Math.floor(Math.random()*3);
+  for(var g=0;g<sliceCount;g++){var sliceY=y+Math.random()*rh*0.8;var sliceH=6+Math.random()*14;var sliceShift=(Math.random()-0.5)*28*glitchPower;fctx.save();fctx.beginPath();fctx.rect(x,sliceY,rw,sliceH);fctx.clip();fctx.globalAlpha=0.85;fctx.drawImage(small,x+sliceShift,y,rw,rh);fctx.restore();}
+  fctx.save();fctx.globalAlpha=0.22*glitchPower;fctx.globalCompositeOperation='lighter';fctx.fillStyle='rgba(0,255,255,0.5)';fctx.beginPath();fctx.ellipse(cx-3,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.fill();fctx.fillStyle='rgba(255,0,150,0.5)';fctx.beginPath();fctx.ellipse(cx+3,cy,rw/2,rh/2,0,0,Math.PI*2);fctx.fill();fctx.restore();
+  for(var l=0;l<2;l++){var lineY=y+Math.random()*rh;fctx.save();fctx.globalAlpha=0.5+Math.random()*0.4;fctx.fillStyle=Math.random()<0.5?'rgba(255,255,255,0.9)':'rgba(94,231,255,0.9)';fctx.fillRect(x+Math.random()*rw*0.3,lineY,rw*(0.3+Math.random()*0.5),1.2);fctx.restore();}
+  for(var n=0;n<14;n++){var nx=x+Math.random()*rw;var ny=y+Math.random()*rh;var ex=(nx-cx)/(rw/2),ey=(ny-cy)/(rh/2);if(ex*ex+ey*ey>1)continue;fctx.save();fctx.globalAlpha=0.25+Math.random()*0.4;fctx.fillStyle=Math.random()<0.5?'#fff':'#5ee7ff';fctx.fillRect(nx,ny,1.5+Math.random()*2.5,1.5);fctx.restore();}
+ }
  fctx.restore();
- fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2,rh/2,0,0,Math.PI*2);
- var borderGrad=fctx.createLinearGradient(x,y,x+rw,y+rh);borderGrad.addColorStop(0,'#5ee7ff');borderGrad.addColorStop(0.5,'#a8baff');borderGrad.addColorStop(1,'#ff4fd8');
- fctx.strokeStyle=borderGrad;fctx.lineWidth=2.2;fctx.shadowColor='rgba(94,231,255,0.8)';fctx.shadowBlur=18;fctx.stroke();fctx.shadowBlur=0;
- fctx.beginPath();fctx.ellipse(cx,cy,rw/2+5,rh/2+5,0,0,Math.PI*2);fctx.strokeStyle='rgba(255,255,255,0.22)';fctx.lineWidth=1;fctx.stroke();fctx.restore();
- fctx.save();fctx.strokeStyle='rgba(220,250,255,0.9)';fctx.lineWidth=2.5;fctx.shadowColor='#5ee7ff';fctx.shadowBlur=10;fctx.lineCap='round';var corner=16,gap=6;
- fctx.beginPath();fctx.moveTo(cx-rw/2-gap,cy-rh/2+corner);fctx.lineTo(cx-rw/2-gap,cy-rh/2-gap);fctx.lineTo(cx-rw/2+corner,cy-rh/2-gap);fctx.stroke();
- fctx.beginPath();fctx.moveTo(cx+rw/2-corner,cy-rh/2-gap);fctx.lineTo(cx+rw/2+gap,cy-rh/2-gap);fctx.lineTo(cx+rw/2+gap,cy-rh/2+corner);fctx.stroke();
- fctx.beginPath();fctx.moveTo(cx-rw/2-gap,cy+rh/2-corner);fctx.lineTo(cx-rw/2-gap,cy+rh/2+gap);fctx.lineTo(cx-rw/2+corner,cy+rh/2+gap);fctx.stroke();
- fctx.beginPath();fctx.moveTo(cx+rw/2-corner,cy+rh/2+gap);fctx.lineTo(cx+rw/2+gap,cy+rh/2+gap);fctx.lineTo(cx+rw/2+gap,cy+rh/2-corner);fctx.stroke();fctx.restore();
- var pulse=1+Math.sin(t*3)*0.12;
- fctx.save();fctx.beginPath();fctx.arc(cx,cy,3.2*pulse,0,Math.PI*2);fctx.fillStyle='rgba(94,231,255,0.9)';fctx.shadowColor='#5ee7ff';fctx.shadowBlur=12;fctx.fill();
- fctx.beginPath();fctx.arc(cx,cy,(10+Math.sin(t*3)*4),0,Math.PI*2);fctx.strokeStyle='rgba(94,231,255,'+(0.5-Math.sin(t*3)*0.2)+')';fctx.lineWidth=1;fctx.stroke();fctx.restore();
+ fctx.save();fctx.beginPath();fctx.ellipse(cx,cy,rw/2+14,rh/2+14,0,0,Math.PI*2);fctx.clip();fctx.globalAlpha=0.35;fctx.imageSmoothingEnabled=true;fctx.drawImage(small,x-6,y-6,rw+12,rh+12);fctx.globalAlpha=1;fctx.restore();
 }
 function drawPortalQuad(pts){
  if(portalAuto&&Date.now()-lastPortalChange>3600){portalPalette=(portalPalette+1)%portalPalettes.length;lastPortalChange=Date.now();var colorBtn=document.getElementById('portalColorBtn');if(colorBtn)colorBtn.textContent='WARNA: '+portalPalettes[portalPalette].name}
