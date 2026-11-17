@@ -2,146 +2,413 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BlckDoor - Kamera</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>TAMA NEO CAMERA · tamaneocamera</title>
+<meta name="theme-color" content="#000000">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif;overflow:hidden;height:100dvh}
-#wrap{position:fixed;inset:0;background:#000}
-video#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
-canvas#out{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-#top{position:absolute;top:0;left:0;right:0;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;z-index:10;background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)}
-#logo{font-weight:900;letter-spacing:1px;font-size:18px}
-#logo span{color:#a855f7}
-#back{font-size:12px;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:999px;color:#fff;text-decoration:none}
-#status{font-size:11px;background:rgba(255,255,255,.15);padding:6px 10px;border-radius:999px;backdrop-filter:blur(10px)}
-#status.on{background:#a855f7}
-#menu{position:absolute;left:0;right:0;bottom:0;z-index:10;padding:10px 10px 14px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent)}
-#row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
-#row::-webkit-scrollbar{display:none}
-.btn{min-width:78px;height:64px;border-radius:16px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;backdrop-filter:blur(10px);flex-shrink:0}
-.btn small{font-weight:500;font-size:10px;opacity:.8}
-.btn.active{border-color:#a855f7;background:#a855f7;transform:scale(1.05)}
-.btn.api.active{border-color:#ff6b00;background:#ff6b00}
-.btn.tornado.active{border-color:#06b6d4;background:#06b6d4}
-.btn.glow.active{border-color:#facc15;background:#eab308;color:#000}
-.btn.geng.active{border-color:#fff;background:#fff;color:#000}
-#hint{text-align:center;font-size:11px;opacity:.7;margin-top:2px}
-#shutter{width:68px;height:68px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.4);margin:8px auto 0;display:block}
-#loading{position:fixed;inset:0;background:#000;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.spinner{width:40px;height:40px;border:3px solid #333;border-top-color:#a855f7;border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+html,body{width:100%;height:100%}
+body{background:#000;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;color:#fff;height:100dvh}
+body.fake-full #menu{display:none!important}
+body.fake-full #top{display:none!important}
+body.fake-full #hud{display:none!important}
+body.fake-full #hint{display:none!important}
+body.fake-full #waWarn{display:none!important}
+#wrap{position:fixed;inset:0;background:#000;isolation:isolate;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#000}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#fx{z-index:2}
+#draw{z-index:3}
+#top{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;padding:0 16px;z-index:20;pointer-events:none;align-items:center}
+#logo{background:linear-gradient(135deg,rgba(3,15,29,.88),rgba(12,17,39,.76));border:1px solid rgba(120,224,255,.34);padding:9px 15px;border-radius:14px;display:flex;gap:10px;align-items:center;backdrop-filter:blur(22px)}
+#dot{width:7px;height:7px;border-radius:50%;background:#61f0d0;box-shadow:0 0 8px #61f0d0}
+#logoTxt{font-weight:850;letter-spacing:4.5px;font-size:12px}
+#hud{position:absolute;top:62px;left:16px;z-index:20;background:rgba(3,12,24,.62);padding:7px 10px;border-radius:9px;font-size:9px;letter-spacing:1px;border:1px solid rgba(128,213,255,.2)}
+#hint{position:absolute;left:0;right:0;bottom:192px;text-align:center;z-index:20;pointer-events:none;padding:0 14px}
+#hint span{display:inline-block;background:rgba(4,13,26,.72);padding:9px 14px;border-radius:11px;font-size:11px;border:1px solid rgba(111,220,255,.22)}
+#menu{position:absolute;bottom:12px;left:0;right:0;z-index:30;padding:0 12px;display:flex;flex-direction:column;gap:9px}
+#mainMenu{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.mbtn{flex:1;min-width:72px;border:1px solid rgba(142,216,255,.2);background:linear-gradient(155deg,rgba(10,24,43,.92),rgba(7,12,27,.94));color:#fff;padding:10px 5px;border-radius:15px;font-size:11px;font-weight:850;text-align:center;cursor:pointer;min-height:66px}
+.mbtn.active{background:linear-gradient(140deg,#dffaff,#a8cfff 58%,#c9b8ff);color:#071321}
+.mbtn small{display:block;font-size:8px;opacity:.72;margin-top:3px}
+#subMenu{background:rgba(5,15,29,.94);border:1px solid rgba(119,219,255,.26);border-radius:17px;padding:13px;display:none;max-height:31vh;overflow:auto}
+#subMenu.show{display:block}
+#subTitle{font-size:11px;font-weight:900;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;letter-spacing:1px}
+#backBtn{background:rgba(174,230,255,.13);color:#e9faff;border:1px solid rgba(147,224,255,.25);padding:7px 11px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer}
+.row{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+.btn{flex-shrink:0;border:1px solid rgba(128,208,255,.2);background:rgba(22,39,61,.88);color:#fff;padding:9px 12px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}
+.btn.active{background:linear-gradient(135deg,#dffaff,#a9cfff);color:#061321}
+#topRow{display:flex;gap:8px;padding:8px;background:rgba(3,10,21,.7);border:1px solid rgba(147,218,255,.18);border-radius:17px}
+.tbtn{flex:1;border:1px solid rgba(138,213,255,.23);background:linear-gradient(150deg,rgba(20,39,61,.94),rgba(7,17,32,.96));color:#fff;padding:10px 5px;border-radius:12px;font-size:10px;font-weight:850;cursor:pointer}
+#photoBtn{background:linear-gradient(135deg,#e7fbff,#9edfff)!important;color:#061322!important}
+#videoBtn{background:linear-gradient(135deg,#ff647d,#bd2855)!important;color:#fff!important}
+#status{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:40;background:linear-gradient(155deg,rgba(5,17,34,.97),rgba(11,13,34,.97));padding:28px 23px;border-radius:25px;text-align:center;font-size:12px;line-height:1.8;width:min(88%,360px);border:1px solid rgba(113,222,255,.34)}
+#startBtn{min-height:48px;margin-top:18px;border-radius:13px;background:linear-gradient(105deg,#48d8ef,#648fff 55%,#a78bfa);color:#061321;font-size:11px;font-weight:900;letter-spacing:1.2px;border:0;width:100%;cursor:pointer}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:25}
+#waWarn{position:absolute;top:98px;left:50%;transform:translateX(-50%);z-index:21;background:#ffe29a;color:#302000;padding:8px 12px;border-radius:10px;font-size:11px;font-weight:800;display:none}
+#exitFull{display:none;position:fixed;top:12px;right:12px;z-index:100;background:rgba(5,15,29,.86);color:#e8fbff;border:1px solid rgba(147,218,255,.3);padding:9px 14px;border-radius:11px;font-size:12px;font-weight:900}
+body.fake-full #exitFull{display:block}
+#assetBox{display:none}
 </style>
 </head>
 <body>
-<div id="loading"><div class="spinner"></div><div>Loading BlckDoor...</div><div style="font-size:11px;opacity:.6">Izinin kamera ya bung</div></div>
 <div id="wrap">
-<video id="cam" playsinline muted autoplay></video>
-<canvas id="out"></canvas>
-<div id="top"><a id="back" href="index.html">← MENU</a><div id="logo">Blck<span>Door</span></div><div id="status">KAMERA OFF</div></div>
+<video id="cam" autoplay playsinline muted></video>
+<canvas id="fx"></canvas>
+<canvas id="draw"></canvas>
+<div id="flash"></div>
+<div id="top"><div id="logo"><div id="dot"></div><div id="logoTxt">TAMA NEO CAMERA</div></div></div>
+<div id="hud"><span id="fps">-- FPS</span><span> | </span><span id="modeTxt">Menu Utama</span><span> | </span><span id="handTxt">0 TANGAN</span></div>
+<div id="waWarn">⚠️ Buka di Chrome biar FULL bisa dipencet</div>
+<div id="hint"><span id="hintTxt">👇 Pilih menu di bawah</span></div>
 <div id="menu">
-<div id="row">
-<button class="btn api" data-mode="api">🔥<span>API</span><small>di tangan</small></button>
-<button class="btn tornado" data-mode="tornado">🌪️<span>TORNADO</span><small>di tangan</small></button>
-<button class="btn hack active" data-mode="hack">💜<span>HACK</span><small>topeng + kode</small></button>
-<button class="btn geng" data-mode="geng">😼<span>GENG</span><small>lu + kucing</small></button>
-<button class="btn glow" data-mode="duit">💸<span>GLOW DUIT</span><small>duit jatuh</small></button>
-<button class="btn" data-mode="sensor">👤<span>SENSOR</span><small>tutup muka</small></button>
-<button class="btn" data-mode="off">❌<span>OFF</span><small>kamera aja</small></button>
+<div id="subMenu"><div id="subTitle"><span id="subTitleTxt">MENU API</span><button id="backBtn">✕ Tutup</button></div><div id="subContent"></div></div>
+<div id="topRow">
+<button class="tbtn" id="fullBtn">⛶ FULL</button>
+<button class="tbtn" id="photoBtn">📸 FOTO</button>
+<button class="tbtn" id="videoBtn">🎥 VIDEO</button>
+<button class="tbtn" id="recTxt" style="display:none">● REC</button>
 </div>
-<div id="hint">API / TORNADO = buka telapak tangan ke atas • HACK = topeng nempel di muka • GENG = lu di belakang kucing</div>
-<button id="shutter"></button>
+<div id="mainMenu">
+<div class="mbtn" data-menu="portal">🌀<br>PORTAL<small>Telunjuk + Jempol</small></div>
+<div class="mbtn" data-menu="api">🔥<br>API<small>Tegak - Telapak</small></div>
+<div class="mbtn" data-menu="tornado">🌪️<br>TORNADO<small>Datar - Atas</small></div>
+<div class="mbtn" data-menu="hack">💻<br>HACK<small>Topeng Pas Muka</small></div>
+<div class="mbtn" data-menu="geng">🐱<br>GENG<small>Bareng Kucing</small></div>
+<div class="mbtn" data-menu="glow">💸<br>GLOW<small>Duit + Estetik</small></div>
+<div class="mbtn" data-menu="draw">✍️<br>GAMBAR<small>Halus</small></div>
+<div class="mbtn" data-menu="sensor">📺<br>SENSOR<small>Acak IG</small></div>
 </div>
+</div>
+<button id="exitFull">✕ Keluar FULL</button>
+<div id="status"><b style="font-size:18px;letter-spacing:3px">TAMA NEO CAMERA</b><br>AI VISUAL SYSTEM · FACE TRACKING READY<br><span style="font-size:10px;color:#8edfff">IZINKAN AKSES KAMERA UNTUK MEMULAI</span><br><button id="startBtn">📷 BUKA KAMERA</button><div id="errTxt" style="color:#fca5a5;font-size:11px;margin-top:8px"></div></div>
+</div>
+<div id="assetBox">
+<video id="apiVid" src="api.mp4" muted loop playsinline preload="auto"></video>
+<video id="torVid" src="tornado.mp4" muted loop playsinline preload="auto"></video>
+<video id="duitVid" src="duit.mp4" muted loop playsinline preload="auto"></video>
+<video id="gengVid" src="geng.mp4" muted loop playsinline preload="auto"></video>
+<img id="topengImg" src="topeng.jpg">
+<img id="sensorImg" src="sensor.jpg">
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script>
-const BASE = "media/";
-const FILES = { api: BASE+"api.mp4", tornado: BASE+"tornado.mp4", duit: BASE+"duit.mp4", geng: BASE+"geng.mp4", topeng: BASE+"topeng.jpg", sensor: BASE+"sensor.jpg" };
-let mode="hack"; let handPos=null; let faceBox=null;
-const video=document.getElementById('cam'); const canvas=document.getElementById('out'); const ctx=canvas.getContext('2d');
-const statusEl=document.getElementById('status'); const loadingEl=document.getElementById('loading');
-function makeVideo(src){ const v=document.createElement('video'); v.src=src; v.loop=true; v.muted=true; v.playsInline=true; v.autoplay=true; v.play().catch(()=>{}); return v; }
-const vidApi=makeVideo(FILES.api); const vidTornado=makeVideo(FILES.tornado); const vidDuit=makeVideo(FILES.duit); const vidGeng=makeVideo(FILES.geng);
-const imgTopeng=new Image(); imgTopeng.src=FILES.topeng;
-const imgSensor=new Image(); imgSensor.src=FILES.sensor;
-function drawChroma(videoEl,dx,dy,dw,dh){
-  if(videoEl.readyState<2) return;
-  const tmp=document.createElement('canvas'); tmp.width=160; tmp.height=160;
-  const tctx=tmp.getContext('2d'); tctx.drawImage(videoEl,0,0,160,160);
-  try{ const img=tctx.getImageData(0,0,160,160); const d=img.data;
-    for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; if(g>90 && g>r*1.4 && g>b*1.3){ d[i+3]=0; } }
-    tctx.putImageData(img,0,0); ctx.drawImage(tmp,dx,dy,dw,dh);
-  }catch(e){ ctx.drawImage(videoEl,dx,dy,dw,dh); }
+var video=document.getElementById('cam'), fx=document.getElementById('fx'), draw=document.getElementById('draw');
+var fctx=fx.getContext('2d'), dctx=draw.getContext('2d');
+var W=0,H=0, currentMenu='none';
+var effectsOn={portal:true,fire:true,tornado:true,hack:false,geng:false,glow:true,draw:true,sensor:false};
+var portalShape='QUAD', portalAuto=true, portalPalette=0;
+var portalPalettes=[{name:'CYBER',a:'#35e7ff',b:'#7657ff',c:'#ff4fd8'},{name:'EMBER',a:'#ff3b30',b:'#ff8a24',c:'#ffe66d'},{name:'AURORA',a:'#35f2b5',b:'#22c7ee',c:'#a78bfa'},{name:'PLASMA',a:'#8b5cf6',b:'#ec4899',c:'#60a5fa'}];
+var portalShapes=['QUAD','DIAMOND','TRIANGLE','HEXAGON','CIRCLE','STAR'];
+var fireMode='asli', fireSize=1, glowMode='duit', drawColor='#a855f7', drawSize=7, sensorOn=false;
+var handsData=[], face=null, lastFace=null, particles=[], fireParticles={left:[],right:[]}, moneyParticles=[];
+var lastDraw={left:null,right:null}, smoothDraw={left:null,right:null}, smoothPos={left:null,right:null}, smoothPalm={left:null,right:null}, smoothFace=null, history=[];
+var fpsFrames=0, fpsTime=Date.now(), frameCount=0, lastHandTime=0, lastPortalChange=Date.now(), loopStarted=false, smoothPortal={tl:null,tr:null,bl:null,br:null}, isFakeFull=false;
+var apiVid=document.getElementById('apiVid'), torVid=document.getElementById('torVid'), duitVid=document.getElementById('duitVid'), gengVid=document.getElementById('gengVid');
+var topengImg=document.getElementById('topengImg'), sensorImg=document.getElementById('sensorImg');
+[apiVid,torVid,duitVid,gengVid].forEach(function(v){ v.play().catch(function(){}); });
+function coverGeom(){ var vw=video.videoWidth||W, vh=video.videoHeight||H; var sc=Math.max(W/vw,H/vh); var dw=vw*sc, dh=vh*sc; return {sc:sc,dw:dw,dh:dh,dx:(W-dw)/2,dy:(H-dh)/2}; }
+function mx(nx){ var g=coverGeom(); return g.dx+(1-nx)*g.dw; }
+function my(ny){ var g=coverGeom(); return g.dy+ny*g.dh; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function smoothPt(k,x,y){ if(!smoothPortal[k]) smoothPortal[k]={x:x,y:y}; smoothPortal[k].x=lerp(smoothPortal[k].x,x,.5); smoothPortal[k].y=lerp(smoothPortal[k].y,y,.5); return {x:smoothPortal[k].x,y:smoothPortal[k].y}; }
+function smoothHand(k,x,y){ if(!smoothPos[k]) smoothPos[k]={x:x,y:y}; smoothPos[k].x=lerp(smoothPos[k].x,x,.6); smoothPos[k].y=lerp(smoothPos[k].y,y,.6); return {x:smoothPos[k].x,y:smoothPos[k].y}; }
+function smoothPalmPt(k,x,y){ if(!smoothPalm[k]) smoothPalm[k]={x:x,y:y}; smoothPalm[k].x=lerp(smoothPalm[k].x,x,.45); smoothPalm[k].y=lerp(smoothPalm[k].y,y,.45); return {x:smoothPalm[k].x,y:smoothPalm[k].y}; }
+function dist2(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+function fingerExtended(lm,tip,pip){ return dist2(lm[tip],lm[0])>dist2(lm[pip],lm[0])*1.12; }
+function isIndexUp(lm){ return fingerExtended(lm,8,6); }
+function isPortalPose(lm){ return dist2(lm[4],lm[5])>dist2(lm[3],lm[5])*1.08 && fingerExtended(lm,8,6) && !fingerExtended(lm,12,10) && !fingerExtended(lm,16,14) && !fingerExtended(lm,20,18); }
+function isPalmOpen(lm){ var c=[fingerExtended(lm,8,6),fingerExtended(lm,12,10),fingerExtended(lm,16,14),fingerExtended(lm,20,18)].filter(Boolean).length; return c>=3; }
+function isFist(lm){ var c=[fingerExtended(lm,8,6),fingerExtended(lm,12,10),fingerExtended(lm,16,14),fingerExtended(lm,20,18)].filter(Boolean).length; return c<=1; }
+// API = tangan tegak, jari ke atas, telapak ke kamera. TORNADO = tangan datar, telapak ke atas
+function handOrientation(lm){
+  var wrist=lm[0], midTip=lm[12], midMcp=lm[9];
+  var dx=midTip.x-wrist.x, dy=midTip.y-wrist.y;
+  // di koordinat kamera yang di-mirror, dy negatif = jari ke atas
+  var vertical = dy < -0.12 && Math.abs(dx) < 0.18;
+  var horizontal = Math.abs(dy) < 0.09 && Math.abs(dx) > 0.07;
+  if(vertical) return 'API';
+  if(horizontal) return 'TORNADO';
+  // fallback: cek z palm - kalau telapak menghadap atas, z jari beda
+  if(dy < -0.05) return 'API';
+  return 'TORNADO';
 }
-let drops=Array.from({length:60},()=>({x:Math.random(),y:Math.random(),speed:0.01+Math.random()*0.02}));
-const faceMesh=new FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
-faceMesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
-faceMesh.onResults(res=>{
-  if(res.multiFaceLandmarks && res.multiFaceLandmarks.length>0){
-    const lm=res.multiFaceLandmarks[0]; let minX=1,maxX=0,minY=1,maxY=0;
-    lm.forEach(p=>{ minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); });
-    faceBox={x:1-maxX,y:minY,w:maxX-minX,h:maxY-minY};
-  } else faceBox=null;
-});
-const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
-hands.onResults(res=>{
-  if(res.multiHandLandmarks && res.multiHandLandmarks.length>0){
-    const lm=res.multiHandLandmarks[0]; const palm=lm[9]; const wrist=lm[0]; const middleTip=lm[12];
-    const isOpen=Math.hypot(middleTip.x-wrist.x,middleTip.y-wrist.y)>0.18;
-    handPos={x:1-palm.x,y:palm.y,open:isOpen};
-  } else handPos=null;
-});
-async function start(){
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
-    video.srcObject=stream; await video.play(); loadingEl.style.display="none";
-    statusEl.textContent="KAMERA ON • "+mode.toUpperCase(); statusEl.classList.add('on');
-    const cam=new Camera(video,{onFrame:async()=>{ await hands.send({image:video}); await faceMesh.send({image:video}); },width:640,height:480});
-    cam.start(); requestAnimationFrame(render);
-  }catch(e){ loadingEl.innerHTML="<div>Gagal buka kamera bung 😭</div><div style='font-size:12px;opacity:.7'>Coba buka di HTTPS / izinin kamera</div>"; }
+function getPalmCenter(lm){ var pts=[lm[0],lm[5],lm[9],lm[13],lm[17]], sx=0, sy=0; for(var i=0;i<pts.length;i++){sx+=pts[i].x;sy+=pts[i].y} return {x:sx/pts.length,y:sy/pts.length}; }
+function drawVideoCover(ctx,cw,ch, vid){
+  var v=vid||video; var vw=v.videoWidth||cw, vh=v.videoHeight||ch; if(!vw||!vh) return;
+  var sc=Math.max(cw/vw,ch/vh), dw=vw*sc, dh=vh*sc, dx=(cw-dw)/2, dy=(ch-dh)/2;
+  ctx.save(); ctx.translate(cw,0); ctx.scale(-1,1); ctx.drawImage(v,dx,dy,dw,dh); ctx.restore();
 }
-function render(){
-  const w=canvas.width=canvas.clientWidth; const h=canvas.height=canvas.clientHeight;
-  if(video.readyState>=2){
-    if(mode==="hack"){
-      ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-w,0,w,h); ctx.restore();
-      ctx.fillStyle="rgba(10,0,20,0.55)"; ctx.fillRect(0,0,w,h);
-      ctx.font="13px monospace";
-      drops.forEach(d=>{ d.y+=d.speed*0.6; if(d.y>1){ d.y=0; d.x=Math.random(); } const ch="01BlckDoor{}#$"[Math.floor(Math.random()*14)]; ctx.fillStyle="rgba(168,85,247,0.85)"; ctx.fillText(ch,d.x*w,d.y*h); });
-    } else if(mode==="geng"){
-      ctx.fillStyle="#000"; ctx.fillRect(0,0,w,h);
-      if(video.readyState>=2){
-        const smallW=w*0.32; const smallH=smallW*1.3; const cx=w/2-smallW/2; const cy=h*0.18;
-        ctx.save(); ctx.beginPath(); ctx.roundRect(cx,cy,smallW,smallH,16); ctx.clip(); ctx.scale(-1,1); ctx.drawImage(video,-(cx+smallW),cy,smallW,smallH); ctx.restore();
-        ctx.fillStyle="#fff"; ctx.font="bold 12px system-ui"; ctx.fillText("LU - BOS GENG",cx+8,cy+smallH-10);
-      }
-      drawChroma(vidGeng,w*0.02,h*0.35,w*0.96,h*0.65);
-    } else {
-      ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-w,0,w,h); ctx.restore();
+function getDisplayCanvas(){
+  if(!window._dc) window._dc=document.createElement('canvas');
+  var dc=window._dc; if(dc.width!==W||dc.height!==H){dc.width=W;dc.height=H}
+  var c=dc.getContext('2d'); c.clearRect(0,0,W,H); drawVideoCover(c,W,H); return dc;
+}
+// ---------- HACK BACKGROUND - hacker asli gelap biru, kode samar ----------
+var hackCodes=[];
+for(var i=0;i<28;i++) hackCodes.push({x:Math.random(), y:Math.random(), txt:Math.random().toString(36).slice(2,12), sp:0.0004+Math.random()*0.0008});
+function drawHackBG(){
+  var g=fctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#020712'); g.addColorStop(.5,'#041426'); g.addColorStop(1,'#000208');
+  fctx.fillStyle=g; fctx.fillRect(0,0,W,H);
+  fctx.save(); fctx.globalAlpha=.14; fctx.strokeStyle='#1e6a9a'; fctx.lineWidth=1;
+  for(var x=0;x<W;x+=48){ fctx.beginPath(); fctx.moveTo(x,0); fctx.lineTo(x,H); fctx.stroke(); }
+  for(var y=0;y<H;y+=48){ fctx.beginPath(); fctx.moveTo(0,y); fctx.lineTo(W,y); fctx.stroke(); }
+  fctx.restore();
+  fctx.save(); fctx.globalAlpha=.28; fctx.font='11px monospace'; fctx.fillStyle='#3fb8ff';
+  hackCodes.forEach(function(c){ c.y+=c.sp; if(c.y>1.05) c.y=-0.05; fctx.fillText(c.txt, c.x*W, c.y*H); });
+  fctx.restore();
+  // cahaya biru dari depan kaya cahaya laptop
+  var rg=fctx.createRadialGradient(W/2,H*0.62,10,W/2,H*0.62,W*0.55); rg.addColorStop(0,'rgba(80,180,255,.28)'); rg.addColorStop(1,'rgba(0,0,0,0)');
+  fctx.fillStyle=rg; fctx.fillRect(0,0,W,H);
+  // vignette
+  var vg=fctx.createRadialGradient(W/2,H/2,W*0.2,W/2,H/2,W*0.75); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.65)');
+  fctx.fillStyle=vg; fctx.fillRect(0,0,W,H);
+}
+// ---------- TOPENG - cuma topengnya doang, dipasin ke muka ----------
+function drawTopeng(){
+  if(!face && !lastFace) return; var cur=face||lastFace;
+  if(!topengImg.complete || !topengImg.naturalWidth) return;
+  var cx=cur.x, cy=cur.y, w=cur.w*1.28, h=cur.h*1.42;
+  // crop tengah topeng.jpg - buang background foto, ambil topengnya doang
+  var iw=topengImg.naturalWidth, ih=topengImg.naturalHeight;
+  var sx=iw*0.14, sy=ih*0.16, sw=iw*0.72, sh=ih*0.68;
+  fctx.save();
+  fctx.beginPath(); fctx.ellipse(cx,cy,w/2,h/2,0,0,Math.PI*2); fctx.clip();
+  // gelapin muka dikit biar topeng nyatu
+  fctx.fillStyle='rgba(0,0,0,.25)'; fctx.fillRect(cx-w/2,cy-h/2,w,h);
+  fctx.globalAlpha=.97;
+  fctx.drawImage(topengImg, sx,sy,sw,sh, cx-w/2, cy-h/2, w, h);
+  // highlight biru biar kaya kena cahaya layar
+  fctx.globalAlpha=.18; fctx.fillStyle='#7ad7ff'; fctx.fillRect(cx-w/2,cy-h/2,w,h*0.45);
+  fctx.restore();
+  // garis tepi topeng biar presisi
+  fctx.save(); fctx.strokeStyle='rgba(140,220,255,.35)'; fctx.lineWidth=1.2; fctx.beginPath(); fctx.ellipse(cx,cy,w/2,h/2,0,0,Math.PI*2); fctx.stroke(); fctx.restore();
+}
+// ---------- GENG - lu nyatu sama kucing, bukan PIP ----------
+function drawGeng(){
+  if(gengVid.readyState>=2){ drawVideoCover(fctx,W,H,gengVid); }
+  else { fctx.fillStyle='#0a0a0a'; fctx.fillRect(0,0,W,H); }
+  // lu di tengah, sejajar sama kucing, ukuran disamain, cahaya disamain
+  var uw=W*0.52, uh=H*0.52;
+  var ux=W/2-uw/2, uy=H*0.38-uh/2;
+  fctx.save();
+  // bayangan biar kaya beneran duduk di lantai yang sama
+  fctx.fillStyle='rgba(0,0,0,.45)'; fctx.beginPath(); fctx.ellipse(W/2, uy+uh*0.92, uw*0.42, 14, 0,0,Math.PI*2); fctx.fill();
+  // feather mask - biar gak ada kotak
+  fctx.beginPath(); fctx.ellipse(W/2, uy+uh/2, uw/2, uh/2, 0,0,Math.PI*2); fctx.clip();
+  fctx.filter='brightness(0.82) contrast(1.08) saturate(0.85) hue-rotate(-8deg)';
+  drawVideoCover(fctx,W,H); // video lu di tengah, di-clip jadi oval nyatu
+  fctx.filter='none';
+  // grading dingin biar nyatu sama kucing hoodie item
+  fctx.fillStyle='rgba(10,18,35,.22)'; fctx.fillRect(ux,uy,uw,uh);
+  fctx.fillStyle='rgba(0,0,0,.12)'; fctx.fillRect(ux,uy,uw,uh);
+  fctx.restore();
+}
+// ---------- SENSOR IG - cuma muka, sensor.jpg diacak ----------
+function drawSensor(){
+  if(!effectsOn.sensor) return;
+  var cur=face||lastFace; if(!cur) return;
+  if(!smoothFace) smoothFace={x:cur.x,y:cur.y,w:cur.w,h:cur.h};
+  smoothFace.x=lerp(smoothFace.x,cur.x,.88); smoothFace.y=lerp(smoothFace.y,cur.y,.88);
+  smoothFace.w=lerp(smoothFace.w,cur.w,.88); smoothFace.h=lerp(smoothFace.h,cur.h,.88);
+  var s=smoothFace, rw=Math.max(150,s.w*1.08), rh=Math.max(190,s.h*1.12), x=s.x-rw/2, y=s.y-rh/2;
+  var disp=getDisplayCanvas();
+  // acak-acak muka jadi kotak puzzle
+  var cols=7, rows=9, cw=rw/cols, ch=rh/rows;
+  var pieces=[];
+  for(var r=0;r<rows;r++) for(var c=0;c<cols;c++) pieces.push({c:c,r:r});
+  // shuffle acak tiap frame biar kaya IG glitch
+  for(var i=pieces.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=pieces[i]; pieces[i]=pieces[j]; pieces[j]=t; }
+  fctx.save();
+  fctx.beginPath(); fctx.ellipse(s.x,s.y,rw/2,rh/2,0,0,Math.PI*2); fctx.clip();
+  // gambar muka yang udah diacak
+  pieces.forEach(function(p,idx){
+    var srcC=p.c, srcR=p.r;
+    var dx=x+(idx%cols)*cw, dy=y+Math.floor(idx/cols)*ch;
+    try{ fctx.drawImage(disp, x+srcC*cw, y+srcR*ch, cw, ch, dx, dy, cw, ch); }catch(e){}
+  });
+  // timpa potongan sensor.jpg acak, transparan dikit biar masih keliatan kulit
+  if(sensorImg.complete && sensorImg.naturalWidth){
+    fctx.globalAlpha=.58;
+    for(var k=0;k<9;k++){
+      var sw2=rw*0.28, sh2=rh*0.22;
+      var sx2=Math.random()*(sensorImg.naturalWidth-sw2), sy2=Math.random()*(sensorImg.naturalHeight-sh2);
+      var dx2=x+Math.random()*(rw-sw2), dy2=y+Math.random()*(rh-sh2);
+      try{ fctx.drawImage(sensorImg, sx2,sy2,sw2,sh2, dx2,dy2, cw*1.6, ch*1.6); }catch(e){}
     }
+    fctx.globalAlpha=1;
   }
-  if(mode==="api" && handPos && handPos.open){ const size=w*0.42; drawChroma(vidApi,handPos.x*w-size/2,handPos.y*h-size*0.7,size,size); }
-  if(mode==="tornado" && handPos && handPos.open){ const size=w*0.48; drawChroma(vidTornado,handPos.x*w-size/2,handPos.y*h-size*0.75,size,size*1.15); }
-  if(mode==="duit"){ drawChroma(vidDuit,0,0,w,h); }
-  if(mode==="hack" && faceBox){
-    const fx=faceBox.x*w; const fy=faceBox.y*h; const fw=faceBox.w*w*1.65; const fh=faceBox.h*h*1.85;
-    if(imgTopeng.complete && imgTopeng.naturalWidth>0){ ctx.drawImage(imgTopeng,fx-fw*0.32,fy-fh*0.28,fw,fh); }
+  // garis glitch IG
+  if(Math.random()<0.35){
+    fctx.fillStyle='rgba(255,255,255,.7)';
+    fctx.fillRect(x+Math.random()*rw*0.4, y+Math.random()*rh, rw*0.5, 1.5);
+    fctx.fillStyle='rgba(94,231,255,.6)';
+    fctx.fillRect(x, y+Math.random()*rh, rw*0.3, 1);
   }
-  if(mode==="sensor" && faceBox){
-    const fx=faceBox.x*w; const fy=faceBox.y*h; const fw=faceBox.w*w*1.4; const fh=faceBox.h*h*1.4;
-    if(imgSensor.complete && imgSensor.naturalWidth>0){ ctx.drawImage(imgSensor,fx-fw*0.2,fy-fh*0.2,fw,fh); }
-  }
-  if((mode==="api"||mode==="tornado") && !handPos){
-    ctx.fillStyle="rgba(0,0,0,.6)"; ctx.fillRect(w/2-130,70,260,28); ctx.fillStyle="#fff"; ctx.font="12px system-ui"; ctx.textAlign="center"; ctx.fillText("Angkat tangan, buka telapak tangan bung ✋",w/2,88); ctx.textAlign="left";
-  }
-  requestAnimationFrame(render);
+  fctx.restore();
+  // outline halus
+  fctx.save(); fctx.strokeStyle='rgba(255,255,255,.12)'; fctx.beginPath(); fctx.ellipse(s.x,s.y,rw/2,rh/2,0,0,Math.PI*2); fctx.stroke(); fctx.restore();
 }
-document.querySelectorAll('.btn').forEach(b=>{ b.addEventListener('click',()=>{ document.querySelectorAll('.btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); mode=b.dataset.mode; statusEl.textContent="KAMERA ON • "+mode.toUpperCase(); if(mode==="api") vidApi.play().catch(()=>{}); if(mode==="tornado") vidTornado.play().catch(()=>{}); if(mode==="duit") vidDuit.play().catch(()=>{}); if(mode==="geng") vidGeng.play().catch(()=>{}); }); });
-document.getElementById('shutter').addEventListener('click',()=>{ const a=document.createElement('a'); a.download="blckdoor-"+mode+"-"+Date.now()+".png"; a.href=canvas.toDataURL("image/png"); a.click(); });
-start();
+// ---------- VIDEO EFFECTS ----------
+function drawRealFire(x,y,scale,key){
+  var now=performance.now()*0.001, palette={asli:['#7f1d1d','#ef2929','#ff7a18','#ffd166','#fff8dc'],biru:['#082f70','#1266db','#25c9ff','#a8f4ff','#ffffff'],ungu:['#451078','#7c2bd1','#d946ef','#f0abfc','#ffffff'],hijau:['#064e3b','#16a34a','#65e84f','#d9ff8a','#ffffff']}[fireMode]||['#7f1d1d','#ef2929','#ff7a18','#ffd166','#fff8dc'];
+  // kalau api.mp4 ada, pake video api biar real
+  if(apiVid.readyState>=2 && effectsOn.fire){
+    var vw=120*scale, vh=120*scale;
+    fctx.save(); fctx.globalCompositeOperation='lighter';
+    try{ fctx.drawImage(apiVid, x-vw/2, y-vh/2-10*scale, vw, vh); }catch(e){}
+    fctx.restore(); return;
+  }
+  var palmW=Math.max(34,42*scale), palmH=Math.max(22,27*scale);
+  fctx.save(); fctx.globalCompositeOperation='lighter';
+  var aura=fctx.createRadialGradient(x,y-8*scale,2,x,y-12*scale,78*scale); aura.addColorStop(0,palette[3]+'aa'); aura.addColorStop(1,'rgba(0,0,0,0)');
+  fctx.fillStyle=aura; fctx.beginPath(); fctx.ellipse(x,y-15*scale,76*scale,58*scale,0,0,Math.PI*2); fctx.fill();
+  for(var i=0;i<11;i++){ var ph=now*(2.2+(i%4)*.28)+i*1.71; var bx=x+(i-5)*8.1*scale+Math.sin(ph)*5*scale; var ht=(34+((Math.sin(ph*1.3)+1)*.5)*48)*scale; var wd=(7+Math.random()*7)*scale; var tx=bx+Math.sin(ph*1.7)*13*scale;
+    var gr=fctx.createLinearGradient(bx,y+4*scale,tx,y-ht); gr.addColorStop(0,palette[1]+'ee'); gr.addColorStop(1,palette[4]+'00');
+    fctx.fillStyle=gr; fctx.beginPath(); fctx.moveTo(bx-wd,y+3*scale); fctx.bezierCurveTo(bx-wd*1.4,y-ht*.32,tx-wd*.35,y-ht*.7,tx,y-ht); fctx.bezierCurveTo(tx+wd*.65,y-ht*.68,bx+wd*1.5,y-ht*.3,bx+wd,y+3*scale); fctx.quadraticCurveTo(bx,y+10*scale,bx-wd,y+3*scale); fctx.fill(); }
+  fctx.restore();
+}
+function drawTornado(x,y,scale){
+  if(torVid.readyState>=2){
+    var vw=170*scale, vh=240*scale;
+    fctx.save(); fctx.globalCompositeOperation='lighter';
+    // tornado berdiri di ATAS telapak, bukan nempel di telapak
+    try{ fctx.drawImage(torVid, x-vw/2, y-vh+18*scale, vw, vh); }catch(e){}
+    fctx.restore();
+    // bayangan puteran di telapak
+    fctx.save(); fctx.globalAlpha=.35; fctx.fillStyle='#fff'; fctx.beginPath(); fctx.ellipse(x,y+6,32*scale,8*scale,0,0,Math.PI*2); fctx.fill(); fctx.restore();
+    return;
+  }
+  fctx.save(); fctx.globalCompositeOperation='lighter'; fctx.strokeStyle='#fff'; fctx.lineWidth=2;
+  for(var i=0;i<4;i++){ fctx.beginPath(); fctx.ellipse(x, y-60-i*22, 10+i*10, 6, 0,0,Math.PI*2); fctx.stroke(); }
+  fctx.restore();
+}
+function drawDuitVideo(x,y){
+  if(duitVid.readyState>=2){
+    fctx.save(); fctx.globalCompositeOperation='lighter';
+    try{ fctx.drawImage(duitVid, x-70, y-90, 140, 140); }catch(e){}
+    fctx.restore();
+  }
+}
+function drawPortalQuad(pts){
+  if(portalAuto && Date.now()-lastPortalChange>3600){ portalPalette=(portalPalette+1)%portalPalettes.length; lastPortalChange=Date.now(); }
+  var top=pts.slice().sort(function(a,b){return a.y-b.y}).slice(0,2).sort(function(a,b){return a.x-b.x});
+  var bot=pts.slice().sort(function(a,b){return a.y-b.y}).slice(2,4).sort(function(a,b){return a.x-b.x});
+  var anchors=[top[0],top[1],bot[1],bot[0]];
+  var cx=anchors.reduce(function(v,p){return v+p.x},0)/4, cy=anchors.reduce(function(v,p){return v+p.y},0)/4;
+  var w=(Math.hypot(anchors[1].x-anchors[0].x,anchors[1].y-anchors[0].y)+Math.hypot(anchors[2].x-anchors[3].x,anchors[2].y-anchors[3].y))/2;
+  var h=(Math.hypot(anchors[3].x-anchors[0].x,anchors[3].y-anchors[0].y)+Math.hypot(anchors[2].x-anchors[1].x,anchors[2].y-anchors[1].y))/2;
+  var tl=smoothPt('tl',anchors[0].x,anchors[0].y), tr=smoothPt('tr',anchors[1].x,anchors[1].y), br=smoothPt('br',anchors[2].x,anchors[2].y), bl=smoothPt('bl',anchors[3].x,anchors[3].y);
+  var palette=portalPalettes[portalPalette], t=performance.now()*.001;
+  function shapePath(ctx,shape,x,y,ww,hh){ ctx.beginPath(); if(shape==='QUAD'){ ctx.moveTo(tl.x,tl.y); ctx.lineTo(tr.x,tr.y); ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y); ctx.closePath(); return; } var n=shape==='HEXAGON'?6:shape==='TRIANGLE'?3:shape==='STAR'?10:48; if(shape==='DIAMOND'){ ctx.moveTo(x,y-hh*.52); ctx.lineTo(x+ww*.52,y); ctx.lineTo(x,y+hh*.52); ctx.lineTo(x-ww*.52,y); ctx.closePath(); return; } for(var i=0;i<n;i++){ var a=-Math.PI/2+i*Math.PI*2/n; var r=(shape==='STAR'&&i%2)?0.48:1; var px=x+Math.cos(a)*ww*.5*r, py=y+Math.sin(a)*hh*.5*r; if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);} ctx.closePath(); }
+  fctx.save(); shapePath(fctx,portalShape,cx,cy,w*.94,h*.94); fctx.clip();
+  var grad=fctx.createLinearGradient(cx-w*.5,cy-h*.5,cx+w*.5,cy+h*.5); grad.addColorStop(0,palette.a); grad.addColorStop(.52,palette.b); grad.addColorStop(1,palette.c);
+  fctx.globalAlpha=.52; fctx.fillStyle=grad; fctx.fillRect(cx-w,cy-h,w*2,h*2);
+  fctx.save(); fctx.globalAlpha=.42; drawVideoCover(fctx,W,H); fctx.restore();
+  fctx.globalAlpha=.35; for(var k=0;k<22;k++){ var yy=cy-h*.5+((k/22*h+t*36)%h); fctx.fillStyle=k%2?'#ffffff':'#06111d'; fctx.fillRect(cx-w*.6,yy,w*1.2,1.2); }
+  fctx.save(); fctx.translate(cx,cy); fctx.rotate(t*.28); fctx.globalAlpha=.48; for(var r=0;r<5;r++){ fctx.beginPath(); fctx.ellipse(0,0,w*(.13+r*.085),h*(.13+r*.085),0,0,Math.PI*2); fctx.strokeStyle=r%2?palette.c:palette.a; fctx.lineWidth=1.4+r*.25; fctx.shadowColor=fctx.strokeStyle; fctx.shadowBlur=13; fctx.stroke(); } fctx.restore();
+  fctx.restore();
+  fctx.save(); shapePath(fctx,portalShape,cx,cy,w*.94,h*.94); fctx.strokeStyle=palette.a; fctx.lineWidth=3.2; fctx.shadowColor=palette.b; fctx.shadowBlur=25; fctx.stroke(); fctx.restore();
+}
+function drawGlow(x,y){
+  if(glowMode==='duit'){ drawDuitVideo(x,y);
+    if(Math.random()<0.35 && moneyParticles.length<28) moneyParticles.push({x:x+(Math.random()-0.5)*40,y:y-10,vy:1+Math.random()*2.2,vx:(Math.random()-0.5)*1.4,rot:Math.random()*360,vr:(Math.random()-0.5)*8,life:1,txt:'💵',size:18+Math.random()*10});
+  }
+  if(particles.length<90) particles.push({x:x,y:y,vx:(Math.random()-0.5)*1.2,vy:-0.8-Math.random()*1.4,life:1,decay:0.015,size:3+Math.random()*5,color:'#facc15',spark:true});
+}
+var subMenu=document.getElementById('subMenu'), subTitleTxt=document.getElementById('subTitleTxt'), subContent=document.getElementById('subContent');
+function closeMenu(){ subMenu.classList.remove('show'); document.querySelectorAll('.mbtn').forEach(function(a){a.classList.remove('active')}); currentMenu='none'; document.getElementById('modeTxt').textContent='Semua Efek Independen'; document.getElementById('hintTxt').textContent='Semua efek aktif independen · pilih menu untuk pengaturan'; }
+document.getElementById('backBtn').onclick=closeMenu;
+function addSwitch(name,label){ var row=document.createElement('div'); row.className='row'; row.style.marginBottom='7px'; var b=document.createElement('button'); b.className='btn '+(effectsOn[name]?'active':''); b.textContent=(effectsOn[name]?'● ON  ':'○ OFF  ')+label; b.onclick=function(){ effectsOn[name]=!effectsOn[name]; if(name==='sensor') sensorOn=effectsOn.sensor; b.classList.toggle('active',effectsOn[name]); b.textContent=(effectsOn[name]?'● ON  ':'○ OFF  ')+label; }; row.appendChild(b); subContent.insertBefore(row,subContent.firstChild); }
+function openMenu(name){
+  currentMenu=name; document.querySelectorAll('.mbtn').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-menu')===name)}); subMenu.classList.add('show');
+  if(name==='portal'){ subTitleTxt.textContent='🌀 PORTAL - AUTO EFEK'; document.getElementById('modeTxt').textContent='Portal'; document.getElementById('hintTxt').textContent='👉👈 2 TANGAN: Telunjuk + Jempol kanan kiri.'; subContent.innerHTML='<div class="row"><button class="btn active" id="portalAuto">✦ AUTO WARNA</button><button class="btn" id="portalShapeBtn">BENTUK: '+portalShape+'</button></div>'; addSwitch('portal','PORTAL'); document.getElementById('portalShapeBtn').onclick=function(){ portalShape=portalShapes[(portalShapes.indexOf(portalShape)+1)%portalShapes.length]; this.textContent='BENTUK: '+portalShape; }; }
+  if(name==='api'){ subTitleTxt.textContent='🔥 API - TEGAK'; document.getElementById('modeTxt').textContent='Api'; document.getElementById('hintTxt').textContent='✋ Tegak, telapak ke kamera = API. Genggam = hilang'; subContent.innerHTML='<div class="row"><button class="btn active" data-fire="asli">🔥 REAL FIRE</button><button class="btn" data-fire="biru">💙 BLUE</button><button class="btn" data-fire="ungu">💜 VIOLET</button></div><div class="row" style="margin-top:6px"><button class="btn" data-size="0.7">Kecil</button><button class="btn active" data-size="1">Sedang</button><button class="btn" data-size="1.6">Besar</button></div>'; addSwitch('fire','API'); subContent.querySelectorAll('[data-fire]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-fire]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); fireMode=b.getAttribute('data-fire'); }; }); subContent.querySelectorAll('[data-size]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-size]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); fireSize=parseFloat(b.getAttribute('data-size')); }; }); }
+  if(name==='tornado'){ subTitleTxt.textContent='🌪️ TORNADO - DATAR'; document.getElementById('modeTxt').textContent='Tornado'; document.getElementById('hintTxt').textContent='🤚 Datar, telapak ke atas = TORNADO berdiri. Genggam = hilang'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Tornado berdiri di atas telapak lu, muter ke atas. Beda sama API yang nempel di telapak.</div>'; addSwitch('tornado','TORNADO'); }
+  if(name==='hack'){ subTitleTxt.textContent='💻 HACK - TOPENG PAS'; document.getElementById('modeTxt').textContent='Hack'; document.getElementById('hintTxt').textContent='💻 Background hacker gelap biru, topeng pas di muka'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Topeng cuma topengnya doang, dipasin ke muka. Background hacker asli gelap biru, kode samar.</div>'; addSwitch('hack','HACK MODE'); }
+  if(name==='geng'){ subTitleTxt.textContent='🐱 GENG - BARANG KUCING'; document.getElementById('modeTxt').textContent='Geng'; document.getElementById('hintTxt').textContent='🐱 Lu duduk bareng geng kucing, nyatu, bukan PIP'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Lu sejajar sama kucing, ukuran + cahaya disamain, ada bayangan biar kaya beneran duduk bareng.</div>'; addSwitch('geng','GENG MODE'); }
+  if(name==='glow'){ subTitleTxt.textContent='💸 GLOW - DUIT'; document.getElementById('modeTxt').textContent='Glow Duit'; document.getElementById('hintTxt').textContent='👆 Telunjuk = Duit + Glow keluar'; subContent.innerHTML='<div class="row"><button class="btn active" data-glow="duit">💸 Duit + Emas</button><button class="btn" data-glow="pink">🩷 Pink</button><button class="btn" data-glow="cyan">🔵 Cyan</button></div>'; addSwitch('glow','GLOW'); subContent.querySelectorAll('[data-glow]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-glow]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); glowMode=b.getAttribute('data-glow'); }; }); }
+  if(name==='draw'){ subTitleTxt.textContent='✍️ GAMBAR - HALUS'; document.getElementById('modeTxt').textContent='Gambar'; document.getElementById('hintTxt').textContent='👆 Telunjuk = Gambar halus'; subContent.innerHTML='<div class="row"><button class="btn active" data-draw="#a855f7">🟣 Ungu</button><button class="btn" data-draw="#ec4899">🩷 Pink</button><button class="btn" data-draw="#22d3ee">🔵 Cyan</button></div><div class="row" style="margin-top:6px"><button class="btn" id="clearBtn2" style="background:#ef4444">🗑 Hapus</button></div>'; addSwitch('draw','AIR DRAWING'); subContent.querySelectorAll('[data-draw]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-draw]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); drawColor=b.getAttribute('data-draw'); }; }); document.getElementById('clearBtn2').onclick=function(){ dctx.clearRect(0,0,W,H); }; }
+  if(name==='sensor'){ subTitleTxt.textContent='📺 SENSOR - ACAK IG'; document.getElementById('modeTxt').textContent='Sensor'; document.getElementById('hintTxt').textContent='📺 Cuma muka, sensor.jpg diacak kaya IG'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Muka diacak jadi puzzle + ditimpa potongan sensor.jpg, masih keliatan dikit tapi gak dikenalin.</div>'; addSwitch('sensor','SENSOR IG'); sensorOn=effectsOn.sensor; }
+}
+document.querySelectorAll('.mbtn').forEach(function(btn){ btn.onclick=function(){ if(currentMenu===btn.getAttribute('data-menu')) closeMenu(); else openMenu(btn.getAttribute('data-menu')); }; });
+function loop(){
+  try{
+    fctx.clearRect(0,0,W,H);
+    // GENG & HACK ganti background dulu, bukan numpuk
+    if(effectsOn.geng){ drawGeng(); }
+    else if(effectsOn.hack){ drawHackBG(); }
+    // SENSOR setelah background, cuma muka
+    if(effectsOn.sensor){ try{ drawSensor(); }catch(e){} }
+    if(Date.now()-lastHandTime>600) handsData=[];
+    document.getElementById('handTxt').textContent=handsData.length+' TANGAN';
+    var portalHands=[];
+    for(var idx=0;idx<handsData.length;idx++){
+      var hand=handsData[idx], lm=hand.landmarks, key=idx===0?'left':'right';
+      var sm=smoothHand(key,mx(lm[8].x),my(lm[8].y)); var px=sm.x, py=sm.y;
+      var pc=getPalmCenter(lm); var palmSm=smoothPalmPt(key,mx(pc.x),my(pc.y));
+      var fist=isFist(lm), open=isPalmOpen(lm), orient=handOrientation(lm);
+      try{
+        // GENGGAM = HILANG SEMUA
+        if(!fist && open){
+          if(effectsOn.fire && orient==='API') drawRealFire(palmSm.x,palmSm.y,fireSize,key);
+          if(effectsOn.tornado && orient==='TORNADO') drawTornado(palmSm.x,palmSm.y,1);
+        }
+      }catch(e){}
+      try{ if(effectsOn.glow && isIndexUp(lm)) drawGlow(px,py); }catch(e){}
+      try{
+        if(effectsOn.draw && isIndexUp(lm)){
+          if(!smoothDraw[key]) smoothDraw[key]={x:px,y:py};
+          smoothDraw[key].x=lerp(smoothDraw[key].x,px,.45); smoothDraw[key].y=lerp(smoothDraw[key].y,py,.45);
+          var sx=smoothDraw[key].x, sy=smoothDraw[key].y;
+          if(lastDraw[key]){ dctx.strokeStyle=drawColor; dctx.lineWidth=drawSize; dctx.lineCap='round'; dctx.lineJoin='round'; dctx.shadowColor=drawColor; dctx.shadowBlur=10; dctx.beginPath(); dctx.moveTo(lastDraw[key].x,lastDraw[key].y); dctx.lineTo(sx,sy); dctx.stroke(); dctx.shadowBlur=0; }
+          lastDraw[key]={x:sx,y:sy};
+        } else { lastDraw[key]=null; smoothDraw[key]=null; }
+      }catch(e){}
+      try{ if(effectsOn.portal && isPortalPose(lm)){ portalHands.push({centerX:(mx(lm[4].x)+mx(lm[8].x))/2, points:[{x:mx(lm[4].x),y:my(lm[4].y)},{x:mx(lm[8].x),y:my(lm[8].y)}]}); } }catch(e){}
+    }
+    try{ if(effectsOn.portal && portalHands.length>=2){ portalHands.sort(function(a,b){return a.centerX-b.centerX}); var lp=portalHands[0].points.slice().sort(function(a,b){return a.y-b.y}); var rp=portalHands[1].points.slice().sort(function(a,b){return a.y-b.y}); drawPortalQuad([lp[0],rp[0],rp[1],lp[1]]); } }catch(e){}
+    // TOPENG HACK - di atas semua, pas di muka
+    if(effectsOn.hack){ try{ drawTopeng(); }catch(e){} }
+    particles=particles.filter(function(p){return p.life>0}); for(var pi=0;pi<particles.length;pi++){ var p=particles[pi]; p.life-=p.decay; p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; fctx.save(); fctx.globalAlpha=Math.max(0,p.life); fctx.fillStyle=p.color; fctx.beginPath(); fctx.arc(p.x,p.y,Math.max(1,p.size*p.life),0,Math.PI*2); fctx.fill(); fctx.restore(); }
+    moneyParticles=moneyParticles.filter(function(p){return p.life>0}); for(var mi=0;mi<moneyParticles.length;mi++){ var mp=moneyParticles[mi]; mp.life-=0.012; mp.x+=mp.vx; mp.y+=mp.vy; mp.rot+=mp.vr; fctx.save(); fctx.globalAlpha=Math.max(0,mp.life); fctx.translate(mp.x,mp.y); fctx.rotate(mp.rot*Math.PI/180); fctx.font='900 '+mp.size+'px system-ui'; fctx.textAlign='center'; fctx.shadowColor='rgba(250,204,21,0.9)'; fctx.shadowBlur=10; fctx.fillText(mp.txt,0,0); fctx.restore(); }
+    fpsFrames++; if(Date.now()-fpsTime>1000){ document.getElementById('fps').textContent=Math.round(fpsFrames*1000/(Date.now()-fpsTime))+' FPS'; fpsFrames=0; fpsTime=Date.now(); }
+  }catch(e){}
+  requestAnimationFrame(loop);
+}
+function resize(){ W=window.innerWidth; H=window.innerHeight; fx.width=W; fx.height=H; draw.width=W; draw.height=H; }
+resize(); window.addEventListener('resize',resize);
+var hands=new Hands({locateFile:function(f){return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/'+f}}); hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:0.55,minTrackingConfidence:0.5}); hands.onResults(function(r){ if(r.multiHandLandmarks&&r.multiHandLandmarks.length){ handsData=r.multiHandLandmarks.map(function(l){return {landmarks:l}}); lastHandTime=Date.now(); } else { if(Date.now()-lastHandTime>400) handsData=[]; }});
+var faceMesh=new FaceMesh({locateFile:function(f){return 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/'+f}}); faceMesh.setOptions({maxNumFaces:1,refineLandmarks:false,minDetectionConfidence:0.55,minTrackingConfidence:0.5}); faceMesh.onResults(function(r){ if(r.multiFaceLandmarks&&r.multiFaceLandmarks[0]){ var lm=r.multiFaceLandmarks[0]; var xs=lm.map(function(p){return p.x}); var ys=lm.map(function(p){return p.y}); var minX=Math.min.apply(null,xs), maxX=Math.max.apply(null,xs), minY=Math.min.apply(null,ys), maxY=Math.max.apply(null,ys); var g=coverGeom(); face={x:mx((minX+maxX)/2),y:my((minY+maxY)/2),w:(maxX-minX)*g.dw,h:(maxY-minY)*g.dh}; lastFace=face; } else { face=null; }});
+var isWA=navigator.userAgent.includes('WhatsApp')||navigator.userAgent.includes('FBAN'); if(isWA) document.getElementById('waWarn').style.display='block';
+function enterFull(){ var el=document.documentElement; try{ var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():null; if(p&&p.catch) p.catch(function(){enterFakeFull()}); }catch(e){} setTimeout(function(){ if(!document.fullscreenElement) enterFakeFull(); },600); }
+function enterFakeFull(){ isFakeFull=true; document.body.classList.add('fake-full'); document.getElementById('fullBtn').textContent='⛶ KELUAR'; setTimeout(resize,100); }
+function exitFull(){ if(document.fullscreenElement){ try{document.exitFullscreen()}catch(e){} } if(isFakeFull){ isFakeFull=false; document.body.classList.remove('fake-full'); document.getElementById('fullBtn').textContent='⛶ FULL'; setTimeout(resize,100); } }
+document.getElementById('fullBtn').onclick=function(){ if(document.fullscreenElement||isFakeFull) exitFull(); else enterFull(); };
+document.getElementById('exitFull').onclick=function(){ exitFull(); };
+var photoBtn=document.getElementById('photoBtn'), videoBtn=document.getElementById('videoBtn'), recTxt=document.getElementById('recTxt'), mr=null, chunks=[], isRec=false, recStart=0, recTimer=null, recordCanvas=null, recordStream=null, recordFrame=0;
+photoBtn.onclick=function(){ var flash=document.getElementById('flash'); flash.style.opacity='0.7'; setTimeout(function(){flash.style.opacity='0'},120); var c=document.createElement('canvas'); c.width=W; c.height=H; var ctx=c.getContext('2d'); drawVideoCover(ctx,W,H); ctx.drawImage(draw,0,0,W,H); ctx.drawImage(fx,0,0,W,H); var a=document.createElement('a'); a.download='tama-'+Date.now()+'.png'; a.href=c.toDataURL('image/png'); a.click(); };
+videoBtn.onclick=function(){
+  if(!isRec){
+    recordCanvas=document.createElement('canvas'); recordCanvas.width=W; recordCanvas.height=H; var rctx=recordCanvas.getContext('2d');
+    var dr=function(){ if(!isRec) return; try{ drawVideoCover(rctx,W,H); rctx.drawImage(draw,0,0,W,H); rctx.drawImage(fx,0,0,W,H); }catch(e){} recordFrame=requestAnimationFrame(dr); };
+    recordStream=recordCanvas.captureStream(30); mr=new MediaRecorder(recordStream); chunks=[]; mr.ondataavailable=function(e){ if(e.data.size>0) chunks.push(e.data); };
+    mr.onstop=function(){ var blob=new Blob(chunks,{type:'video/webm'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='tama-video.webm'; a.click(); };
+    mr.start(); isRec=true; dr(); recStart=Date.now(); videoBtn.textContent='⏹ STOP'; recTxt.style.display='block';
+    recTimer=setInterval(function(){ var s=Math.floor((Date.now()-recStart)/1000); recTxt.textContent='● REC '+s+'s'; },500);
+  } else { isRec=false; cancelAnimationFrame(recordFrame); clearInterval(recTimer); videoBtn.textContent='🎥 VIDEO'; recTxt.style.display='none'; try{mr.stop()}catch(e){} }
+};
+document.getElementById('startBtn').onclick=async function(){
+  document.getElementById('errTxt').textContent='Menghubungkan kamera...';
+  try{
+    var stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},audio:false});
+    video.srcObject=stream; await video.play(); document.getElementById('status').style.display='none';
+    var cam=new Camera(video,{onFrame:async function(){ frameCount++; await hands.send({image:video}); if(frameCount%3===0) await faceMesh.send({image:video}); },width:1280,height:720}); cam.start();
+    if(!loopStarted){ loopStarted=true; loop(); }
+  }catch(e){ document.getElementById('errTxt').textContent='Gagal: '+e.message; }
+};
 </script>
 </body>
 </html>
