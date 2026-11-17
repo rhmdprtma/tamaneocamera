@@ -84,12 +84,12 @@ body.fake-full #exitFull{display:block}
 <div id="status"><b style="font-size:18px;letter-spacing:3px">TAMA NEO CAMERA</b><br>AI VISUAL SYSTEM · FACE TRACKING READY<br><span style="font-size:10px;color:#8edfff">IZINKAN AKSES KAMERA UNTUK MEMULAI</span><br><button id="startBtn">📷 BUKA KAMERA</button><div id="errTxt" style="color:#fca5a5;font-size:11px;margin-top:8px"></div></div>
 </div>
 <div id="assetBox">
-<video id="apiVid" src="api.mp4" muted loop playsinline preload="auto"></video>
-<video id="torVid" src="tornado.mp4" muted loop playsinline preload="auto"></video>
-<video id="duitVid" src="duit.mp4" muted loop playsinline preload="auto"></video>
-<video id="gengVid" src="geng.mp4" muted loop playsinline preload="auto"></video>
-<img id="topengImg" src="topeng.jpg">
-<img id="sensorImg" src="sensor.jpg">
+<video id="apiVid" src="media/api.mp4" muted loop playsinline preload="auto"></video>
+<video id="torVid" src="media/tornado.mp4" muted loop playsinline preload="auto"></video>
+<video id="duitVid" src="media/duit.mp4" muted loop playsinline preload="auto"></video>
+<video id="gengVid" src="media/geng.mp4" muted loop playsinline preload="auto"></video>
+<img id="topengImg" src="media/topeng.jpg">
+<img id="sensorImg" src="media/sensor.jpg">
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
@@ -102,7 +102,7 @@ var effectsOn={portal:true,fire:true,tornado:true,hack:false,geng:false,glow:tru
 var portalShape='QUAD', portalAuto=true, portalPalette=0;
 var portalPalettes=[{name:'CYBER',a:'#35e7ff',b:'#7657ff',c:'#ff4fd8'},{name:'EMBER',a:'#ff3b30',b:'#ff8a24',c:'#ffe66d'},{name:'AURORA',a:'#35f2b5',b:'#22c7ee',c:'#a78bfa'},{name:'PLASMA',a:'#8b5cf6',b:'#ec4899',c:'#60a5fa'}];
 var portalShapes=['QUAD','DIAMOND','TRIANGLE','HEXAGON','CIRCLE','STAR'];
-var fireMode='asli', fireSize=1, glowMode='duit', drawColor='#a855f7', drawSize=7, sensorOn=false;
+var fireMode='asli', fireSize=1.25, glowMode='duit', drawColor='#a855f7', drawSize=7, sensorOn=false;
 var handsData=[], face=null, lastFace=null, particles=[], fireParticles={left:[],right:[]}, moneyParticles=[];
 var lastDraw={left:null,right:null}, smoothDraw={left:null,right:null}, smoothPos={left:null,right:null}, smoothPalm={left:null,right:null}, smoothFace=null, history=[];
 var fpsFrames=0, fpsTime=Date.now(), frameCount=0, lastHandTime=0, lastPortalChange=Date.now(), loopStarted=false, smoothPortal={tl:null,tr:null,bl:null,br:null}, isFakeFull=false;
@@ -122,16 +122,13 @@ function isIndexUp(lm){ return fingerExtended(lm,8,6); }
 function isPortalPose(lm){ return dist2(lm[4],lm[5])>dist2(lm[3],lm[5])*1.08 && fingerExtended(lm,8,6) && !fingerExtended(lm,12,10) && !fingerExtended(lm,16,14) && !fingerExtended(lm,20,18); }
 function isPalmOpen(lm){ var c=[fingerExtended(lm,8,6),fingerExtended(lm,12,10),fingerExtended(lm,16,14),fingerExtended(lm,20,18)].filter(Boolean).length; return c>=3; }
 function isFist(lm){ var c=[fingerExtended(lm,8,6),fingerExtended(lm,12,10),fingerExtended(lm,16,14),fingerExtended(lm,20,18)].filter(Boolean).length; return c<=1; }
-// API = tangan tegak, jari ke atas, telapak ke kamera. TORNADO = tangan datar, telapak ke atas
 function handOrientation(lm){
-  var wrist=lm[0], midTip=lm[12], midMcp=lm[9];
+  var wrist=lm[0], midTip=lm[12];
   var dx=midTip.x-wrist.x, dy=midTip.y-wrist.y;
-  // di koordinat kamera yang di-mirror, dy negatif = jari ke atas
   var vertical = dy < -0.12 && Math.abs(dx) < 0.18;
   var horizontal = Math.abs(dy) < 0.09 && Math.abs(dx) > 0.07;
   if(vertical) return 'API';
   if(horizontal) return 'TORNADO';
-  // fallback: cek z palm - kalau telapak menghadap atas, z jari beda
   if(dy < -0.05) return 'API';
   return 'TORNADO';
 }
@@ -146,7 +143,6 @@ function getDisplayCanvas(){
   var dc=window._dc; if(dc.width!==W||dc.height!==H){dc.width=W;dc.height=H}
   var c=dc.getContext('2d'); c.clearRect(0,0,W,H); drawVideoCover(c,W,H); return dc;
 }
-// ---------- HACK BACKGROUND - hacker asli gelap biru, kode samar ----------
 var hackCodes=[];
 for(var i=0;i<28;i++) hackCodes.push({x:Math.random(), y:Math.random(), txt:Math.random().toString(36).slice(2,12), sp:0.0004+Math.random()*0.0008});
 function drawHackBG(){
@@ -159,54 +155,43 @@ function drawHackBG(){
   fctx.save(); fctx.globalAlpha=.28; fctx.font='11px monospace'; fctx.fillStyle='#3fb8ff';
   hackCodes.forEach(function(c){ c.y+=c.sp; if(c.y>1.05) c.y=-0.05; fctx.fillText(c.txt, c.x*W, c.y*H); });
   fctx.restore();
-  // cahaya biru dari depan kaya cahaya laptop
-  var rg=fctx.createRadialGradient(W/2,H*0.62,10,W/2,H*0.62,W*0.55); rg.addColorStop(0,'rgba(80,180,255,.28)'); rg.addColorStop(1,'rgba(0,0,0,0)');
+  // LU NYA DIGAMBAR DI ATAS BACKGROUND - JANGAN SAMPE ILANG LAGI
+  fctx.save(); fctx.globalAlpha=.92; drawVideoCover(fctx,W,H); fctx.restore();
+  fctx.fillStyle='rgba(20,80,150,.16)'; fctx.fillRect(0,0,W,H);
+  var rg=fctx.createRadialGradient(W/2,H*0.62,10,W/2,H*0.62,W*0.55); rg.addColorStop(0,'rgba(80,180,255,.18)'); rg.addColorStop(1,'rgba(0,0,0,0)');
   fctx.fillStyle=rg; fctx.fillRect(0,0,W,H);
-  // vignette
-  var vg=fctx.createRadialGradient(W/2,H/2,W*0.2,W/2,H/2,W*0.75); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.65)');
+  var vg=fctx.createRadialGradient(W/2,H/2,W*0.2,W/2,H/2,W*0.75); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.45)');
   fctx.fillStyle=vg; fctx.fillRect(0,0,W,H);
 }
-// ---------- TOPENG - cuma topengnya doang, dipasin ke muka ----------
 function drawTopeng(){
   if(!face && !lastFace) return; var cur=face||lastFace;
   if(!topengImg.complete || !topengImg.naturalWidth) return;
   var cx=cur.x, cy=cur.y, w=cur.w*1.28, h=cur.h*1.42;
-  // crop tengah topeng.jpg - buang background foto, ambil topengnya doang
   var iw=topengImg.naturalWidth, ih=topengImg.naturalHeight;
   var sx=iw*0.14, sy=ih*0.16, sw=iw*0.72, sh=ih*0.68;
   fctx.save();
   fctx.beginPath(); fctx.ellipse(cx,cy,w/2,h/2,0,0,Math.PI*2); fctx.clip();
-  // gelapin muka dikit biar topeng nyatu
   fctx.fillStyle='rgba(0,0,0,.25)'; fctx.fillRect(cx-w/2,cy-h/2,w,h);
   fctx.globalAlpha=.97;
   fctx.drawImage(topengImg, sx,sy,sw,sh, cx-w/2, cy-h/2, w, h);
-  // highlight biru biar kaya kena cahaya layar
   fctx.globalAlpha=.18; fctx.fillStyle='#7ad7ff'; fctx.fillRect(cx-w/2,cy-h/2,w,h*0.45);
   fctx.restore();
-  // garis tepi topeng biar presisi
   fctx.save(); fctx.strokeStyle='rgba(140,220,255,.35)'; fctx.lineWidth=1.2; fctx.beginPath(); fctx.ellipse(cx,cy,w/2,h/2,0,0,Math.PI*2); fctx.stroke(); fctx.restore();
 }
-// ---------- GENG - lu nyatu sama kucing, bukan PIP ----------
 function drawGeng(){
   if(gengVid.readyState>=2){ drawVideoCover(fctx,W,H,gengVid); }
   else { fctx.fillStyle='#0a0a0a'; fctx.fillRect(0,0,W,H); }
-  // lu di tengah, sejajar sama kucing, ukuran disamain, cahaya disamain
-  var uw=W*0.52, uh=H*0.52;
-  var ux=W/2-uw/2, uy=H*0.38-uh/2;
+  var uw=W*0.78, uh=H*0.78;
+  var ux=W/2-uw/2, uy=H*0.52-uh/2;
   fctx.save();
-  // bayangan biar kaya beneran duduk di lantai yang sama
   fctx.fillStyle='rgba(0,0,0,.45)'; fctx.beginPath(); fctx.ellipse(W/2, uy+uh*0.92, uw*0.42, 14, 0,0,Math.PI*2); fctx.fill();
-  // feather mask - biar gak ada kotak
   fctx.beginPath(); fctx.ellipse(W/2, uy+uh/2, uw/2, uh/2, 0,0,Math.PI*2); fctx.clip();
-  fctx.filter='brightness(0.82) contrast(1.08) saturate(0.85) hue-rotate(-8deg)';
-  drawVideoCover(fctx,W,H); // video lu di tengah, di-clip jadi oval nyatu
+  fctx.filter='brightness(0.82) contrast(1.08) saturate(0.85)';
+  drawVideoCover(fctx,W,H);
   fctx.filter='none';
-  // grading dingin biar nyatu sama kucing hoodie item
-  fctx.fillStyle='rgba(10,18,35,.22)'; fctx.fillRect(ux,uy,uw,uh);
-  fctx.fillStyle='rgba(0,0,0,.12)'; fctx.fillRect(ux,uy,uw,uh);
+  fctx.fillStyle='rgba(10,18,35,.18)'; fctx.fillRect(ux,uy,uw,uh);
   fctx.restore();
 }
-// ---------- SENSOR IG - cuma muka, sensor.jpg diacak ----------
 function drawSensor(){
   if(!effectsOn.sensor) return;
   var cur=face||lastFace; if(!cur) return;
@@ -215,21 +200,16 @@ function drawSensor(){
   smoothFace.w=lerp(smoothFace.w,cur.w,.88); smoothFace.h=lerp(smoothFace.h,cur.h,.88);
   var s=smoothFace, rw=Math.max(150,s.w*1.08), rh=Math.max(190,s.h*1.12), x=s.x-rw/2, y=s.y-rh/2;
   var disp=getDisplayCanvas();
-  // acak-acak muka jadi kotak puzzle
   var cols=7, rows=9, cw=rw/cols, ch=rh/rows;
   var pieces=[];
   for(var r=0;r<rows;r++) for(var c=0;c<cols;c++) pieces.push({c:c,r:r});
-  // shuffle acak tiap frame biar kaya IG glitch
   for(var i=pieces.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=pieces[i]; pieces[i]=pieces[j]; pieces[j]=t; }
   fctx.save();
   fctx.beginPath(); fctx.ellipse(s.x,s.y,rw/2,rh/2,0,0,Math.PI*2); fctx.clip();
-  // gambar muka yang udah diacak
   pieces.forEach(function(p,idx){
-    var srcC=p.c, srcR=p.r;
     var dx=x+(idx%cols)*cw, dy=y+Math.floor(idx/cols)*ch;
-    try{ fctx.drawImage(disp, x+srcC*cw, y+srcR*ch, cw, ch, dx, dy, cw, ch); }catch(e){}
+    try{ fctx.drawImage(disp, x+p.c*cw, y+p.r*ch, cw, ch, dx, dy, cw, ch); }catch(e){}
   });
-  // timpa potongan sensor.jpg acak, transparan dikit biar masih keliatan kulit
   if(sensorImg.complete && sensorImg.naturalWidth){
     fctx.globalAlpha=.58;
     for(var k=0;k<9;k++){
@@ -240,7 +220,6 @@ function drawSensor(){
     }
     fctx.globalAlpha=1;
   }
-  // garis glitch IG
   if(Math.random()<0.35){
     fctx.fillStyle='rgba(255,255,255,.7)';
     fctx.fillRect(x+Math.random()*rw*0.4, y+Math.random()*rh, rw*0.5, 1.5);
@@ -248,42 +227,29 @@ function drawSensor(){
     fctx.fillRect(x, y+Math.random()*rh, rw*0.3, 1);
   }
   fctx.restore();
-  // outline halus
-  fctx.save(); fctx.strokeStyle='rgba(255,255,255,.12)'; fctx.beginPath(); fctx.ellipse(s.x,s.y,rw/2,rh/2,0,0,Math.PI*2); fctx.stroke(); fctx.restore();
 }
-// ---------- VIDEO EFFECTS ----------
 function drawRealFire(x,y,scale,key){
-  var now=performance.now()*0.001, palette={asli:['#7f1d1d','#ef2929','#ff7a18','#ffd166','#fff8dc'],biru:['#082f70','#1266db','#25c9ff','#a8f4ff','#ffffff'],ungu:['#451078','#7c2bd1','#d946ef','#f0abfc','#ffffff'],hijau:['#064e3b','#16a34a','#65e84f','#d9ff8a','#ffffff']}[fireMode]||['#7f1d1d','#ef2929','#ff7a18','#ffd166','#fff8dc'];
-  // kalau api.mp4 ada, pake video api biar real
-  if(apiVid.readyState>=2 && effectsOn.fire){
-    var vw=120*scale, vh=120*scale;
+  if(apiVid.readyState>=2){
+    var vw=150*scale, vh=150*scale;
     fctx.save(); fctx.globalCompositeOperation='lighter';
     try{ fctx.drawImage(apiVid, x-vw/2, y-vh/2-10*scale, vw, vh); }catch(e){}
     fctx.restore(); return;
   }
-  var palmW=Math.max(34,42*scale), palmH=Math.max(22,27*scale);
+  var palette=['#7f1d1d','#ef2929','#ff7a18','#ffd166','#fff8dc'];
   fctx.save(); fctx.globalCompositeOperation='lighter';
   var aura=fctx.createRadialGradient(x,y-8*scale,2,x,y-12*scale,78*scale); aura.addColorStop(0,palette[3]+'aa'); aura.addColorStop(1,'rgba(0,0,0,0)');
   fctx.fillStyle=aura; fctx.beginPath(); fctx.ellipse(x,y-15*scale,76*scale,58*scale,0,0,Math.PI*2); fctx.fill();
-  for(var i=0;i<11;i++){ var ph=now*(2.2+(i%4)*.28)+i*1.71; var bx=x+(i-5)*8.1*scale+Math.sin(ph)*5*scale; var ht=(34+((Math.sin(ph*1.3)+1)*.5)*48)*scale; var wd=(7+Math.random()*7)*scale; var tx=bx+Math.sin(ph*1.7)*13*scale;
-    var gr=fctx.createLinearGradient(bx,y+4*scale,tx,y-ht); gr.addColorStop(0,palette[1]+'ee'); gr.addColorStop(1,palette[4]+'00');
-    fctx.fillStyle=gr; fctx.beginPath(); fctx.moveTo(bx-wd,y+3*scale); fctx.bezierCurveTo(bx-wd*1.4,y-ht*.32,tx-wd*.35,y-ht*.7,tx,y-ht); fctx.bezierCurveTo(tx+wd*.65,y-ht*.68,bx+wd*1.5,y-ht*.3,bx+wd,y+3*scale); fctx.quadraticCurveTo(bx,y+10*scale,bx-wd,y+3*scale); fctx.fill(); }
   fctx.restore();
 }
 function drawTornado(x,y,scale){
   if(torVid.readyState>=2){
-    var vw=170*scale, vh=240*scale;
-    fctx.save(); fctx.globalCompositeOperation='lighter';
-    // tornado berdiri di ATAS telapak, bukan nempel di telapak
+    var vw=200*scale, vh=300*scale;
+    fctx.save();
     try{ fctx.drawImage(torVid, x-vw/2, y-vh+18*scale, vw, vh); }catch(e){}
     fctx.restore();
-    // bayangan puteran di telapak
-    fctx.save(); fctx.globalAlpha=.35; fctx.fillStyle='#fff'; fctx.beginPath(); fctx.ellipse(x,y+6,32*scale,8*scale,0,0,Math.PI*2); fctx.fill(); fctx.restore();
     return;
   }
-  fctx.save(); fctx.globalCompositeOperation='lighter'; fctx.strokeStyle='#fff'; fctx.lineWidth=2;
-  for(var i=0;i<4;i++){ fctx.beginPath(); fctx.ellipse(x, y-60-i*22, 10+i*10, 6, 0,0,Math.PI*2); fctx.stroke(); }
-  fctx.restore();
+  return;
 }
 function drawDuitVideo(x,y){
   if(duitVid.readyState>=2){
@@ -325,7 +291,7 @@ function addSwitch(name,label){ var row=document.createElement('div'); row.class
 function openMenu(name){
   currentMenu=name; document.querySelectorAll('.mbtn').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-menu')===name)}); subMenu.classList.add('show');
   if(name==='portal'){ subTitleTxt.textContent='🌀 PORTAL - AUTO EFEK'; document.getElementById('modeTxt').textContent='Portal'; document.getElementById('hintTxt').textContent='👉👈 2 TANGAN: Telunjuk + Jempol kanan kiri.'; subContent.innerHTML='<div class="row"><button class="btn active" id="portalAuto">✦ AUTO WARNA</button><button class="btn" id="portalShapeBtn">BENTUK: '+portalShape+'</button></div>'; addSwitch('portal','PORTAL'); document.getElementById('portalShapeBtn').onclick=function(){ portalShape=portalShapes[(portalShapes.indexOf(portalShape)+1)%portalShapes.length]; this.textContent='BENTUK: '+portalShape; }; }
-  if(name==='api'){ subTitleTxt.textContent='🔥 API - TEGAK'; document.getElementById('modeTxt').textContent='Api'; document.getElementById('hintTxt').textContent='✋ Tegak, telapak ke kamera = API. Genggam = hilang'; subContent.innerHTML='<div class="row"><button class="btn active" data-fire="asli">🔥 REAL FIRE</button><button class="btn" data-fire="biru">💙 BLUE</button><button class="btn" data-fire="ungu">💜 VIOLET</button></div><div class="row" style="margin-top:6px"><button class="btn" data-size="0.7">Kecil</button><button class="btn active" data-size="1">Sedang</button><button class="btn" data-size="1.6">Besar</button></div>'; addSwitch('fire','API'); subContent.querySelectorAll('[data-fire]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-fire]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); fireMode=b.getAttribute('data-fire'); }; }); subContent.querySelectorAll('[data-size]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-size]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); fireSize=parseFloat(b.getAttribute('data-size')); }; }); }
+  if(name==='api'){ subTitleTxt.textContent='🔥 API - TEGAK'; document.getElementById('modeTxt').textContent='Api'; document.getElementById('hintTxt').textContent='✋ Tegak, telapak ke kamera = API. Genggam = hilang'; subContent.innerHTML='<div class="row"><button class="btn active" data-fire="asli">🔥 REAL FIRE</button><button class="btn" data-fire="biru">💙 BLUE</button><button class="btn" data-fire="ungu">💜 VIOLET</button></div><div class="row" style="margin-top:6px"><button class="btn" data-size="0.7">Kecil</button><button class="btn active" data-size="1.25">Sedang</button><button class="btn" data-size="1.6">Besar</button></div>'; addSwitch('fire','API'); subContent.querySelectorAll('[data-fire]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-fire]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); fireMode=b.getAttribute('data-fire'); }; }); subContent.querySelectorAll('[data-size]').forEach(function(b){ b.onclick=function(){ subContent.querySelectorAll('[data-size]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); fireSize=parseFloat(b.getAttribute('data-size')); }; }); }
   if(name==='tornado'){ subTitleTxt.textContent='🌪️ TORNADO - DATAR'; document.getElementById('modeTxt').textContent='Tornado'; document.getElementById('hintTxt').textContent='🤚 Datar, telapak ke atas = TORNADO berdiri. Genggam = hilang'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Tornado berdiri di atas telapak lu, muter ke atas. Beda sama API yang nempel di telapak.</div>'; addSwitch('tornado','TORNADO'); }
   if(name==='hack'){ subTitleTxt.textContent='💻 HACK - TOPENG PAS'; document.getElementById('modeTxt').textContent='Hack'; document.getElementById('hintTxt').textContent='💻 Background hacker gelap biru, topeng pas di muka'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Topeng cuma topengnya doang, dipasin ke muka. Background hacker asli gelap biru, kode samar.</div>'; addSwitch('hack','HACK MODE'); }
   if(name==='geng'){ subTitleTxt.textContent='🐱 GENG - BARANG KUCING'; document.getElementById('modeTxt').textContent='Geng'; document.getElementById('hintTxt').textContent='🐱 Lu duduk bareng geng kucing, nyatu, bukan PIP'; subContent.innerHTML='<div style="font-size:11px;opacity:.76;line-height:1.5">Lu sejajar sama kucing, ukuran + cahaya disamain, ada bayangan biar kaya beneran duduk bareng.</div>'; addSwitch('geng','GENG MODE'); }
@@ -337,10 +303,8 @@ document.querySelectorAll('.mbtn').forEach(function(btn){ btn.onclick=function()
 function loop(){
   try{
     fctx.clearRect(0,0,W,H);
-    // GENG & HACK ganti background dulu, bukan numpuk
     if(effectsOn.geng){ drawGeng(); }
     else if(effectsOn.hack){ drawHackBG(); }
-    // SENSOR setelah background, cuma muka
     if(effectsOn.sensor){ try{ drawSensor(); }catch(e){} }
     if(Date.now()-lastHandTime>600) handsData=[];
     document.getElementById('handTxt').textContent=handsData.length+' TANGAN';
@@ -351,7 +315,6 @@ function loop(){
       var pc=getPalmCenter(lm); var palmSm=smoothPalmPt(key,mx(pc.x),my(pc.y));
       var fist=isFist(lm), open=isPalmOpen(lm), orient=handOrientation(lm);
       try{
-        // GENGGAM = HILANG SEMUA
         if(!fist && open){
           if(effectsOn.fire && orient==='API') drawRealFire(palmSm.x,palmSm.y,fireSize,key);
           if(effectsOn.tornado && orient==='TORNADO') drawTornado(palmSm.x,palmSm.y,1);
@@ -370,7 +333,6 @@ function loop(){
       try{ if(effectsOn.portal && isPortalPose(lm)){ portalHands.push({centerX:(mx(lm[4].x)+mx(lm[8].x))/2, points:[{x:mx(lm[4].x),y:my(lm[4].y)},{x:mx(lm[8].x),y:my(lm[8].y)}]}); } }catch(e){}
     }
     try{ if(effectsOn.portal && portalHands.length>=2){ portalHands.sort(function(a,b){return a.centerX-b.centerX}); var lp=portalHands[0].points.slice().sort(function(a,b){return a.y-b.y}); var rp=portalHands[1].points.slice().sort(function(a,b){return a.y-b.y}); drawPortalQuad([lp[0],rp[0],rp[1],lp[1]]); } }catch(e){}
-    // TOPENG HACK - di atas semua, pas di muka
     if(effectsOn.hack){ try{ drawTopeng(); }catch(e){} }
     particles=particles.filter(function(p){return p.life>0}); for(var pi=0;pi<particles.length;pi++){ var p=particles[pi]; p.life-=p.decay; p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; fctx.save(); fctx.globalAlpha=Math.max(0,p.life); fctx.fillStyle=p.color; fctx.beginPath(); fctx.arc(p.x,p.y,Math.max(1,p.size*p.life),0,Math.PI*2); fctx.fill(); fctx.restore(); }
     moneyParticles=moneyParticles.filter(function(p){return p.life>0}); for(var mi=0;mi<moneyParticles.length;mi++){ var mp=moneyParticles[mi]; mp.life-=0.012; mp.x+=mp.vx; mp.y+=mp.vy; mp.rot+=mp.vr; fctx.save(); fctx.globalAlpha=Math.max(0,mp.life); fctx.translate(mp.x,mp.y); fctx.rotate(mp.rot*Math.PI/180); fctx.font='900 '+mp.size+'px system-ui'; fctx.textAlign='center'; fctx.shadowColor='rgba(250,204,21,0.9)'; fctx.shadowBlur=10; fctx.fillText(mp.txt,0,0); fctx.restore(); }
