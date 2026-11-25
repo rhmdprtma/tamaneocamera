@@ -13,9 +13,9 @@
 
 | | LINK |
 | :--- | :--- |
-| 🏠 **Beranda** | https://tamayana.github.io/tamaneocamera/ |
-| 📷 **Kamera** | https://tamayana.github.io/tamaneocamera/kamera.html |
-| ⏰ **Alarm** | https://tamayana.github.io/tamaneocamera/alarm.html |
+| 🏠 **Beranda** | https://rhmdprtma.github.io/tamaneocamera/ |
+| 📷 **Kamera** | https://rhmdprtma.github.io/tamaneocamera/kamera.html |
+| ⏰ **Alarm** | https://rhmdprtma.github.io/tamaneocamera/alarm.html |
 
 > ⚠️ **Jangan buka di WhatsApp.**
 > Copy link, buka di **Chrome / Safari** biar FULL & VIDEO bisa dipencet.
